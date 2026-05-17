@@ -560,6 +560,18 @@ function showScreen(id) {
 // ════════════════════════════════
 //  AUTH HANDLER
 // ════════════════════════════════
+// ── Cek session dulu SEBELUM subscribe onAuthStateChange
+// Ini cegah flash ke auth screen waktu refresh
+let _initialSession = null;
+(async () => {
+  try {
+    const { data } = await sb.auth.getSession();
+    _initialSession = data?.session || null;
+  } catch(e) {
+    _initialSession = null;
+  }
+})();
+
 sb.auth.onAuthStateChange(async (event, session) => {
   console.log('[auth]', event, session?.user?.email || 'no session');
 
@@ -568,17 +580,35 @@ sb.auth.onAuthStateChange(async (event, session) => {
     return;
   }
 
+  // SIGNED_OUT — cek apakah ini logout beneran atau cuma flicker waktu refresh
   if (event === 'SIGNED_OUT') {
-    _appInited = false;
-    ME = null; MY_PROFILE = null;
-    showScreen('screen-auth');
+    if (_intentionalLogout) {
+      // Logout beneran dari tombol
+      _intentionalLogout = false;
+      _appInited = false;
+      ME = null; MY_PROFILE = null;
+      showScreen('screen-auth');
+      return;
+    }
+    // Bukan intentional — tunggu dulu, mungkin cuma token refresh
+    setTimeout(async () => {
+      try {
+        const { data } = await sb.auth.getSession();
+        if (data?.session?.user) {
+          console.log('[auth] false SIGNED_OUT, session masih ada');
+          return;
+        }
+      } catch(e) {}
+      _appInited = false;
+      ME = null; MY_PROFILE = null;
+      showScreen('screen-auth');
+    }, 1000);
     return;
   }
 
   if (session?.user) {
     if (_appInited && ME?.id === session.user.id) {
-      showScreen('screen-app');
-      return;
+      return; // sudah init, skip
     }
     ME = session.user;
     try { await loadMyProfile(); } catch(e) { console.error('loadMyProfile:', e); }
@@ -590,16 +620,16 @@ sb.auth.onAuthStateChange(async (event, session) => {
     return;
   }
 
-  // Tidak ada session = belum login
-  showScreen('screen-auth');
+  // Kalau event INITIAL_SESSION dan session null = memang belum login
+  if (event === 'INITIAL_SESSION') {
+    showScreen('screen-auth');
+  }
 });
 
-// ── FALLBACK: onAuthStateChange kadang ga fire INITIAL_SESSION
-// di static hosting (GitHub Pages). Cek manual setelah 300ms.
-// Kalau splash masih aktif artinya event belum fire → paksa cek.
+// ── FALLBACK: kalau onAuthStateChange ga fire dalam 1 detik
 setTimeout(async () => {
   const splash = document.getElementById('screen-splash');
-  if (!splash) return; // sudah pindah screen, aman
+  if (!splash) return;
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (session?.user) {
@@ -614,23 +644,20 @@ setTimeout(async () => {
       showScreen('screen-auth');
     }
   } catch(e) {
-    console.error('getSession fallback error:', e);
     showScreen('screen-auth');
   }
-}, 300);
+}, 1000);
 
-// ── HARD TIMEOUT 5 detik — kalau masih di splash paksa ke auth screen
+// ── HARD TIMEOUT 8 detik
 setTimeout(() => {
   const splash = document.getElementById('screen-splash');
   if (!splash) return;
   const st = document.getElementById('splash-status');
   if (st) st.innerText = 'Koneksi lambat, mengalihkan...';
   setTimeout(() => {
-    if (document.getElementById('screen-splash')) {
-      showScreen('screen-auth');
-    }
+    if (document.getElementById('screen-splash')) showScreen('screen-auth');
   }, 800);
-}, 5000);
+}, 8000);
 
 // ════════════════════════════════
 //  AUTH FUNCTIONS
@@ -785,13 +812,15 @@ async function doForgot() {
   showSuccess('Link reset dikirim! Cek inbox/spam kamu.');
 }
 
+let _intentionalLogout = false;
+
 async function doLogout() {
+  _intentionalLogout = true;
   try { await upsertPresence(false); } catch(e) {}
   cleanupChannels();
   _appInited = false;
   ME = null; MY_PROFILE = null; followMap = {}; allUsers = [];
   await sb.auth.signOut();
-  // onAuthStateChange handle showScreen('screen-auth')
 }
 
 async function loadMyProfile() {
@@ -880,10 +909,24 @@ async function loadFollowMap(){
 
 function subscribeFollows(){
   if(followCh) sb.removeChannel(followCh);
-  followCh=sb.channel('follows-rt-'+ME.id)
-    .on('postgres_changes',{event:'*',schema:'public',table:'follows'},async ()=>{
-      await loadFollowMap(); renderPeopleList(allUsers); loadConvos();
-    }).subscribe();
+  followCh = sb.channel('follows-rt-'+ME.id)
+    .on('postgres_changes', {event:'*', schema:'public', table:'follows'}, async () => {
+      await loadFollowMap();
+      renderPeopleList(allUsers);
+      loadConvos();
+    })
+    // Kalau ada user baru daftar → refresh people list
+    .on('postgres_changes', {event:'INSERT', schema:'public', table:'users'}, async (payload) => {
+      if(payload.new?.id === ME.id) return; // skip diri sendiri
+      // Tambah user baru ke allUsers tanpa reload full
+      const newUser = { ...payload.new, is_online: false };
+      const sudahAda = allUsers.find(u => u.id === newUser.id);
+      if(!sudahAda) {
+        allUsers = [newUser, ...allUsers];
+        renderPeopleList(allUsers);
+      }
+    })
+    .subscribe();
 }
 
 async function toggleFollow(targetId,targetUsername,targetEmail){
@@ -938,14 +981,47 @@ async function getSharedConvoId(partnerId){
 //  PEOPLE / DISCOVER
 // ════════════════════════════════
 async function loadPeopleList(){
-  document.getElementById('people-list').innerHTML=`<div class="convo-empty"><i class="fa fa-spinner fa-spin"></i><p>Memuat...</p></div>`;
-  const {data:users}=await sb.from('users').select('id,username,email,bio').neq('id',ME.id).order('created_at',{ascending:false});
-  const ids=(users||[]).map(u=>u.id);
-  const {data:pres}=ids.length?await sb.from('user_presence').select('user_id,is_online').in('user_id',ids):{data:[]};
-  const presMap={};
-  if(pres) pres.forEach(p=>{ presMap[p.user_id]=p.is_online; });
-  allUsers=(users||[]).map(u=>({...u,is_online:presMap[u.id]||false}));
-  renderPeopleList(allUsers);
+  const el = document.getElementById('people-list');
+  el.innerHTML = `<div class="convo-empty"><i class="fa fa-spinner fa-spin"></i><p>Memuat pengguna...</p></div>`;
+
+  try {
+    // Pastikan session masih valid
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { el.innerHTML = `<div class="convo-empty"><i class="fa fa-lock"></i><p>Sesi habis, silakan login ulang</p></div>`; return; }
+
+    const { data: users, error } = await sb.from('users')
+      .select('id,username,email,bio')
+      .neq('id', ME.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('loadPeopleList error:', error.message);
+      el.innerHTML = `<div class="convo-empty"><i class="fa fa-triangle-exclamation"></i><p>Gagal memuat: ${error.message}</p></div>`;
+      return;
+    }
+
+    if (!users || users.length === 0) {
+      el.innerHTML = `<div class="convo-empty"><i class="fa fa-users"></i><p>Belum ada pengguna lain</p><small>Ajak temenmu daftar!</small></div>`;
+      allUsers = [];
+      return;
+    }
+
+    // Batch load presence
+    const ids = users.map(u => u.id);
+    const { data: pres } = await sb.from('user_presence')
+      .select('user_id,is_online')
+      .in('user_id', ids);
+
+    const presMap = {};
+    if (pres) pres.forEach(p => { presMap[p.user_id] = p.is_online; });
+
+    allUsers = users.map(u => ({ ...u, is_online: presMap[u.id] || false }));
+    renderPeopleList(allUsers);
+
+  } catch(e) {
+    console.error('loadPeopleList catch:', e);
+    el.innerHTML = `<div class="convo-empty"><i class="fa fa-triangle-exclamation"></i><p>Gagal memuat pengguna</p></div>`;
+  }
 }
 
 function renderPeopleList(list){
