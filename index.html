@@ -49,8 +49,20 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .auth-success{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);color:#86efac;border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:14px;display:none}
 .notice{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);color:#fde68a;border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:14px;display:none}
 
+/* RESET PASSWORD SCREEN */
+#screen-reset-password{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% -20%,rgba(59,130,246,0.18) 0%,transparent 65%),var(--bg);padding:24px}
+.reset-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border2);border-radius:28px;padding:40px 32px;box-shadow:0 32px 80px rgba(0,0,0,0.6)}
+.reset-card h2{font-size:20px;font-weight:900;margin-bottom:6px}
+.reset-card p{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5}
+.pass-strength{height:4px;border-radius:99px;background:var(--surface2);margin-top:6px;overflow:hidden;margin-bottom:6px}
+.pass-strength-bar{height:100%;border-radius:99px;transition:width .3s,background .3s;width:0}
+.pass-strength-label{font-size:10px;color:var(--text3);margin-bottom:8px}
+
 /* MAIN APP */
 #screen-app{flex-direction:row;overflow:hidden}
+
+/* REALTIME CLOCK */
+#sidebar-clock{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.3px;padding:4px 0 0;}
 
 /* SIDEBAR */
 #sidebar{width:100%;max-width:380px;flex-shrink:0;display:flex;flex-direction:column;background:var(--bg2);border-right:1px solid var(--border);height:100dvh;position:relative}
@@ -337,7 +349,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           <div class="sidebar-logo-dot" onclick="openProfileDrawer()">
             <img id="sb-avatar" src="" style="display:none;"><span id="sb-avatar-icon">💬</span>
           </div>
-          <h2>XREZZKY</h2>
+          <div>
+            <h2>XREZZKY</h2>
+            <div id="sidebar-clock"></div>
+          </div>
         </div>
         <div class="sidebar-actions">
           <div class="icon-btn" onclick="openNewChat()" title="Chat Baru"><i class="fa fa-pen-to-square"></i></div>
@@ -424,6 +439,32 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   </div>
 </div>
 
+<!-- RESET PASSWORD SCREEN (muncul waktu user klik link dari email) -->
+<div id="screen-reset-password" class="screen" style="">
+  <div class="reset-card">
+    <div class="auth-logo" style="margin-bottom:20px;">
+      <div class="auth-logo-icon">🔒</div>
+      <h1>XREZZKY<span>Chat</span></h1>
+    </div>
+    <h2>Buat Password Baru</h2>
+    <p>Masukkan password baru kamu. Minimal 6 karakter.</p>
+    <div id="reset-error" class="auth-error"></div>
+    <div id="reset-success" class="auth-success"></div>
+    <div class="field" style="margin-bottom:6px;">
+      <i class="fa fa-lock"></i>
+      <input type="password" id="rp-pass1" placeholder="Password baru" oninput="checkPassStrength(this.value)" autocomplete="new-password">
+    </div>
+    <div class="pass-strength"><div class="pass-strength-bar" id="pass-bar"></div></div>
+    <div class="pass-strength-label" id="pass-label"></div>
+    <div class="field">
+      <i class="fa fa-lock"></i>
+      <input type="password" id="rp-pass2" placeholder="Konfirmasi password baru" autocomplete="new-password" onkeydown="if(event.key==='Enter')doResetPassword()">
+    </div>
+    <button class="btn-primary" onclick="doResetPassword()" id="btn-reset">Simpan Password Baru</button>
+    <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--text3);cursor:pointer;" onclick="showScreen('screen-auth')">← Kembali ke Login</p>
+  </div>
+</div>
+
 <div id="ctx-menu"><div class="ctx-reactions" id="ctx-reactions"></div><div class="ctx-actions" id="ctx-actions"></div></div>
 <div id="toast"></div>
 <div id="lightbox" onclick="if(event.target===this)closeLightbox()">
@@ -479,7 +520,13 @@ async function doLogin(){
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   btn.disabled=false; btn.innerText='Masuk';
-  if(error) showError(error.message==='Invalid login credentials'?'Email atau password salah.':error.message);
+  if(error){
+    const msg=error.message||'';
+    if(msg.includes('Invalid login credentials')) return showError('Email atau password salah.');
+    if(msg.includes('Email not confirmed')) return showError('Email belum diverifikasi. Cek inbox/spam kamu.');
+    if(msg.includes('rate limit')) return showError('⏳ Terlalu banyak percobaan. Tunggu beberapa menit.');
+    return showError(msg);
+  }
 }
 
 async function doRegister(){
@@ -493,10 +540,16 @@ async function doRegister(){
   const btn=document.querySelector('#form-register .btn-primary');
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
   const {data,error}=await sb.auth.signUp({email,password:pass});
-  if(error){ btn.disabled=false; btn.innerText='Buat Akun'; return showError(error.message); }
-  if(data.user) await sb.from('users').upsert({id:data.user.id,username,email,bio:'',created_at:new Date().toISOString()});
   btn.disabled=false; btn.innerText='Buat Akun';
-  showSuccess('Akun dibuat!'); document.getElementById('auth-notice').style.display='block';
+  if(error){
+    const msg=error.message||'';
+    if(msg.includes('rate limit')||msg.includes('email rate')) return showError('⏳ Terlalu banyak percobaan registrasi. Tunggu beberapa menit lalu coba lagi.');
+    if(msg.includes('already registered')||msg.includes('already exists')) return showError('Email ini sudah terdaftar. Coba login.');
+    return showError(msg);
+  }
+  if(data.user) await sb.from('users').upsert({id:data.user.id,username,email,bio:'',created_at:new Date().toISOString()});
+  showSuccess('Akun dibuat! Cek email untuk verifikasi (atau langsung login jika email konfirmasi dimatikan).');
+  document.getElementById('auth-notice').style.display='block';
 }
 
 async function doForgot(){
@@ -515,8 +568,19 @@ async function doLogout(){
 }
 
 sb.auth.onAuthStateChange(async(event,session)=>{
-  if(session?.user){ ME=session.user; await loadMyProfile(); showScreen('screen-app'); initApp(); }
-  else showScreen('screen-auth');
+  if(event==='PASSWORD_RECOVERY'){
+    showScreen('screen-reset-password');
+    return;
+  }
+  if(session?.user){
+    ME=session.user;
+    await loadMyProfile();
+    showScreen('screen-app');
+    if(!window._appInited){ window._appInited=true; initApp(); }
+  } else {
+    window._appInited=false;
+    showScreen('screen-auth');
+  }
 });
 
 async function loadMyProfile(){
@@ -551,7 +615,7 @@ async function updateSidebarUI(){
 // ════════════════════════════════
 function initApp(){
   initEmojiGrid(); loadConvos(); loadFollowMap(); loadPeopleList(); upsertPresence(true);
-  subscribeConvos(); subscribeFollows();
+  subscribeConvos(); subscribeFollows(); startRealtimeClock();
   window._presInt=setInterval(()=>upsertPresence(true),25000);
   window.addEventListener('beforeunload',()=>upsertPresence(false));
   document.addEventListener('visibilitychange',()=>upsertPresence(!document.hidden));
@@ -952,6 +1016,75 @@ async function changePassword(){ const p=prompt('Password baru (min 6 karakter):
 function showPartnerInfo(){ if(!activePartner) return; showToast(activePartner.email); }
 function openClearConfirm(){ if(!activeConvoId||!confirm('Hapus semua pesan?')) return; sb.from('messages').delete().eq('conversation_id',activeConvoId).then(()=>{ msgs=[]; renderMessages(); showToast('Chat dihapus.'); }); }
 function backToList(){ document.getElementById('sidebar').classList.remove('hidden-mobile'); document.getElementById('chatroom').classList.remove('show-mobile'); document.getElementById('chat-ui').style.display='none'; document.getElementById('empty-state').style.display=''; activeConvoId=null; activePartner=null; if(msgCh) sb.removeChannel(msgCh); if(typingCh) sb.removeChannel(typingCh); if(presCh) sb.removeChannel(presCh); }
+
+// ════════════════════════════════
+//  RESET PASSWORD (dari link email)
+// ════════════════════════════════
+function checkPassStrength(v){
+  const bar=document.getElementById('pass-bar');
+  const label=document.getElementById('pass-label');
+  if(!v){ bar.style.width='0'; label.innerText=''; return; }
+  let score=0;
+  if(v.length>=6) score++;
+  if(v.length>=10) score++;
+  if(/[A-Z]/.test(v)) score++;
+  if(/[0-9]/.test(v)) score++;
+  if(/[^A-Za-z0-9]/.test(v)) score++;
+  const levels=[
+    {pct:'20%',bg:'#ef4444',text:'Sangat lemah'},
+    {pct:'40%',bg:'#f97316',text:'Lemah'},
+    {pct:'60%',bg:'#f59e0b',text:'Cukup'},
+    {pct:'80%',bg:'#22c55e',text:'Kuat'},
+    {pct:'100%',bg:'#10b981',text:'Sangat kuat 💪'},
+  ];
+  const lvl=levels[Math.min(score,4)];
+  bar.style.width=lvl.pct; bar.style.background=lvl.bg;
+  label.innerText=lvl.text; label.style.color=lvl.bg;
+}
+
+async function doResetPassword(){
+  const p1=document.getElementById('rp-pass1').value;
+  const p2=document.getElementById('rp-pass2').value;
+  const errEl=document.getElementById('reset-error');
+  const sucEl=document.getElementById('reset-success');
+  errEl.style.display='none'; sucEl.style.display='none';
+
+  if(p1.length<6){ errEl.innerText='Password minimal 6 karakter.'; errEl.style.display='block'; return; }
+  if(p1!==p2){ errEl.innerText='Password tidak cocok!'; errEl.style.display='block'; return; }
+
+  const btn=document.getElementById('btn-reset');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
+
+  const {error}=await sb.auth.updateUser({password:p1});
+  btn.disabled=false; btn.innerText='Simpan Password Baru';
+
+  if(error){
+    errEl.innerText='Gagal: '+error.message; errEl.style.display='block';
+  } else {
+    sucEl.innerText='✅ Password berhasil diubah! Mengalihkan ke aplikasi...'; sucEl.style.display='block';
+    // Setelah 2 detik, redirect ke app (session sudah aktif)
+    setTimeout(async()=>{
+      const {data:{session}}=await sb.auth.getSession();
+      if(session?.user){ ME=session.user; await loadMyProfile(); showScreen('screen-app'); if(!window._appInited){ window._appInited=true; initApp(); } }
+      else showScreen('screen-auth');
+    }, 2000);
+  }
+}
+
+// ════════════════════════════════
+//  REALTIME CLOCK
+// ════════════════════════════════
+function startRealtimeClock(){
+  function tick(){
+    const now=new Date();
+    const jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const tgl=now.toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short'});
+    const el=document.getElementById('sidebar-clock');
+    if(el) el.innerText=`${tgl} · ${jam}`;
+  }
+  tick();
+  setInterval(tick,1000);
+}
 
 // ════════════════════════════════
 //  UTILS
