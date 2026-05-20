@@ -279,7 +279,75 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 @keyframes spin{to{transform:rotate(360deg)}}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:500;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 #toast.show{opacity:1}
-/* USER PROFILE MODAL */
+/* ── ROLE BADGES ── */
+.role-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:.3px;text-transform:uppercase}
+.role-badge.owner{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}
+.role-badge.admin{background:rgba(59,130,246,.2);color:#60a5fa;border:1px solid rgba(59,130,246,.3)}
+
+/* ── REQUEST BANNER (chat pending) ── */
+#request-banner{
+  background:rgba(245,158,11,.1);border-bottom:1px solid rgba(245,158,11,.25);
+  padding:10px 16px;display:none;flex-shrink:0;
+  flex-direction:column;gap:6px;
+}
+.req-banner-title{font-size:12px;font-weight:700;color:#fbbf24}
+.req-banner-sub{font-size:11px;color:var(--text3);line-height:1.5}
+.req-banner-actions{display:flex;gap:8px;margin-top:2px}
+.req-btn{padding:6px 14px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:.15s}
+.req-btn.accept{background:var(--green);color:#fff}
+.req-btn.accept:hover{background:#16a34a}
+.req-btn.decline{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.req-btn.decline:hover{background:rgba(239,68,68,.25)}
+
+/* ── BLOCKED BANNER ── */
+#blocked-banner{
+  background:rgba(239,68,68,.08);border-top:1px solid rgba(239,68,68,.2);
+  padding:12px 16px;display:none;flex-shrink:0;
+  align-items:center;justify-content:center;gap:8px;
+  font-size:12px;color:#fca5a5;font-weight:600;
+}
+
+/* ── CHAT LOCKED (hanya 1 pesan) ── */
+#chat-locked-bar{
+  background:rgba(245,158,11,.08);border-top:1px solid rgba(245,158,11,.2);
+  padding:10px 16px;display:none;flex-shrink:0;
+  align-items:center;justify-content:center;
+  font-size:12px;color:#fbbf24;font-weight:600;gap:6px;
+}
+
+/* ── REPORT MODAL ── */
+.report-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:flex-end;justify-content:center}
+.report-overlay.open{display:flex}
+.report-sheet{width:100%;max-width:480px;background:var(--bg2);border-radius:24px 24px 0 0;border:1px solid var(--border2);padding:0 0 40px;animation:slideUp .28s cubic-bezier(.4,0,.2,1)}
+.report-handle{width:36px;height:4px;background:var(--surface2);border-radius:99px;margin:14px auto 0}
+.report-title{padding:16px 20px 12px;font-size:17px;font-weight:800;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.report-body{padding:16px 20px}
+.report-reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.report-reason-btn{
+  padding:10px 12px;border-radius:12px;font-size:12px;font-weight:700;
+  cursor:pointer;border:1.5px solid var(--border2);background:var(--surface);
+  color:var(--text2);transition:.15s;text-align:left;font-family:inherit;
+}
+.report-reason-btn.selected{border-color:var(--accent);background:rgba(59,130,246,.1);color:var(--accent)}
+.report-detail{
+  width:100%;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:12px;padding:10px 14px;color:var(--text);
+  font-size:13px;font-family:inherit;resize:none;outline:none;
+  margin-bottom:14px;
+}
+.report-detail:focus{border-color:var(--accent)}
+.report-submit{
+  width:100%;padding:14px;border-radius:14px;background:var(--red);color:#fff;
+  font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:inherit;
+  transition:.15s;
+}
+.report-submit:hover{background:#dc2626}
+.report-submit:disabled{opacity:.5;pointer-events:none}
+
+/* ── ADMIN BADGE di convo list ── */
+.convo-item .admin-eye{
+  font-size:10px;color:var(--accent);margin-left:4px;
+}
 .profile-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:400;display:none;align-items:flex-end;justify-content:center}
 .profile-modal-overlay.open{display:flex}
 .profile-modal{width:100%;max-width:480px;background:var(--bg2);border-radius:28px 28px 0 0;border:1px solid var(--border2);padding:0 0 40px;animation:slideUp .28s cubic-bezier(.4,0,.2,1)}
@@ -370,6 +438,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           <img id="pd-avatar" src="">
           <h3 id="pd-name"></h3>
           <p id="pd-email"></p>
+          <div id="pd-role-badge" style="margin-top:4px;"></div>
           <div class="profile-stats">
             <div class="profile-stat"><strong id="pd-following">0</strong><span>Mengikuti</span></div>
             <div class="profile-stat"><strong id="pd-followers">0</strong><span>Pengikut</span></div>
@@ -406,6 +475,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           </div>
         </div>
         <div class="sidebar-actions">
+          <div class="icon-btn" id="admin-panel-btn" onclick="openAdminPanel()" title="Admin Panel" style="display:none;background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);">
+            <i class="fa fa-shield-halved" style="color:var(--accent);"></i>
+          </div>
           <div class="icon-btn" onclick="openNewChat()" title="Chat Baru"><i class="fa fa-pen-to-square"></i></div>
         </div>
       </div>
@@ -457,6 +529,15 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           <span class="reply-close" onclick="cancelReply()"><i class="fa fa-xmark"></i></span>
         </div>
       </div>
+      <!-- Request banner: muncul di sisi penerima -->
+      <div id="request-banner">
+        <div class="req-banner-title">⚡ Permintaan Pesan</div>
+        <div class="req-banner-sub" id="req-banner-sub">mengirimkan permintaan chat. Follow balik untuk bisa chat normal.</div>
+        <div class="req-banner-actions">
+          <button class="req-btn accept" onclick="acceptChatRequest()"><i class="fa fa-check"></i> Follow Balik</button>
+          <button class="req-btn decline" onclick="declineChatRequest()"><i class="fa fa-xmark"></i> Abaikan</button>
+        </div>
+      </div>
       <div id="msg-area"></div>
       <div id="typing-row" style="display:none;padding:0 12px 6px;">
         <div style="display:flex;gap:8px;align-items:flex-end;">
@@ -466,6 +547,17 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       </div>
       <div id="emoji-picker"><div class="emoji-grid" id="emoji-grid"></div></div>
       <div id="media-preview-strip"></div>
+      <!-- Blocked banner -->
+      <div id="blocked-banner">
+        <i class="fa fa-ban"></i>
+        <span id="blocked-banner-text">Kamu tidak bisa mengirim pesan ke pengguna ini.</span>
+        <button style="margin-left:auto;background:none;border:1px solid rgba(239,68,68,.3);color:#f87171;padding:4px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="unblockFromBanner()">Buka Blokir</button>
+      </div>
+      <!-- Chat locked: sudah kirim 1 request, tunggu follow balik -->
+      <div id="chat-locked-bar">
+        <i class="fa fa-lock"></i>
+        <span>Pesan terkirim. Tunggu mereka follow balik untuk chat normal.</span>
+      </div>
       <div id="input-bar">
         <div class="input-row">
           <button class="emoji-toggle" onclick="toggleEmoji()"><span>😊</span></button>
@@ -516,6 +608,52 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   </div>
 </div>
 
+<!-- ADMIN PANEL MODAL -->
+<div class="modal-overlay" id="modal-admin" onclick="if(event.target===this)closeAdminPanel()" style="align-items:stretch;">
+  <div style="width:100%;max-width:520px;background:var(--bg2);display:flex;flex-direction:column;height:100dvh;border-right:1px solid var(--border2);animation:slideUp .25s ease;">
+    <!-- Header -->
+    <div style="padding:calc(var(--safe-top)+14px) 18px 0;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <i class="fa fa-shield-halved" style="color:var(--accent);font-size:18px;"></i>
+          <span style="font-size:17px;font-weight:900;">Admin Panel</span>
+          <span id="admin-role-label" style="font-size:10px;"></span>
+        </div>
+        <div class="icon-btn" onclick="closeAdminPanel()"><i class="fa fa-xmark"></i></div>
+      </div>
+      <!-- Stats bar -->
+      <div style="display:flex;gap:0;margin-bottom:12px;">
+        <div style="flex:1;text-align:center;padding:8px 0;">
+          <div id="stat-users" style="font-size:20px;font-weight:900;">-</div>
+          <div style="font-size:10px;color:var(--text3);">User</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:8px 0;border-left:1px solid var(--border);">
+          <div id="stat-msgs" style="font-size:20px;font-weight:900;">-</div>
+          <div style="font-size:10px;color:var(--text3);">Pesan</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:8px 0;border-left:1px solid var(--border);">
+          <div id="stat-reports" style="font-size:20px;font-weight:900;color:var(--red);">-</div>
+          <div style="font-size:10px;color:var(--text3);">Laporan</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:8px 0;border-left:1px solid var(--border);">
+          <div id="stat-online" style="font-size:20px;font-weight:900;color:var(--green);">-</div>
+          <div style="font-size:10px;color:var(--text3);">Online</div>
+        </div>
+      </div>
+      <!-- Tabs -->
+      <div style="display:flex;gap:4px;padding-bottom:0;">
+        <button class="sidebar-tab active" id="atab-reports" onclick="switchAdminTab('reports')" style="flex:1;">🚨 Laporan</button>
+        <button class="sidebar-tab" id="atab-users" onclick="switchAdminTab('users')" style="flex:1;">👥 User</button>
+        <button class="sidebar-tab" id="atab-bans" onclick="switchAdminTab('bans')" style="flex:1;">🚫 Ban</button>
+      </div>
+    </div>
+    <!-- Content -->
+    <div style="flex:1;overflow-y:auto;" id="admin-content">
+      <div style="padding:40px 20px;text-align:center;color:var(--text3);"><span class="spinner"></span></div>
+    </div>
+  </div>
+</div>
+
 <!-- USER PROFILE MODAL -->
 <div class="profile-modal-overlay" id="modal-user-profile" onclick="if(event.target===this)closeUserProfile()">
   <div class="profile-modal">
@@ -534,6 +672,29 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="pm-stat"><strong id="pm-following">-</strong><span>Mengikuti</span></div>
     </div>
     <div class="pm-actions" id="pm-actions"></div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="report-overlay" id="modal-report" onclick="if(event.target===this)closeReport()">
+  <div class="report-sheet">
+    <div class="report-handle"></div>
+    <div class="report-title"><i class="fa fa-flag" style="color:var(--red)"></i> Laporkan Pengguna</div>
+    <div class="report-body">
+      <p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Pilih alasan laporan:</p>
+      <div class="report-reason-grid" id="report-reason-grid">
+        <button class="report-reason-btn" onclick="selectReason(this,'Spam')">🚫 Spam</button>
+        <button class="report-reason-btn" onclick="selectReason(this,'Konten tidak pantas')">🔞 Konten tidak pantas</button>
+        <button class="report-reason-btn" onclick="selectReason(this,'Pelecehan / Bullying')">😡 Pelecehan</button>
+        <button class="report-reason-btn" onclick="selectReason(this,'Penipuan')">💸 Penipuan</button>
+        <button class="report-reason-btn" onclick="selectReason(this,'Akun palsu')">🎭 Akun palsu</button>
+        <button class="report-reason-btn" onclick="selectReason(this,'Lainnya')">📝 Lainnya</button>
+      </div>
+      <textarea class="report-detail" id="report-detail" rows="3" placeholder="Ceritakan lebih detail (opsional)..."></textarea>
+      <button class="report-submit" id="report-submit-btn" onclick="submitReport()" disabled>
+        <i class="fa fa-flag"></i> Kirim Laporan
+      </button>
+    </div>
   </div>
 </div>
 
@@ -567,8 +728,292 @@ const sb = createClient(
 );
 
 const CLOUD = 'dknodp2zg', PRESET = 'chat_Unsigned';
-const MAX_IMG = 5 * 1024 * 1024;
-const MAX_VID = 10 * 1024 * 1024;
+
+// ── BATAS UKURAN FILE ──────────────────────────────────────────
+// User biasa:
+//   Foto  ≤ 5MB   → permanen
+//   Foto  > 5MB, ≤ 50MB  → 24 jam lalu hapus
+//   Video ≤ 100MB → 24 jam lalu hapus
+//   Video > 100MB → ditolak
+//
+// Owner / Admin:
+//   Foto & Video tidak ada batas (max Cloudinary ~100MB)
+//   Tidak ada timer — permanen
+// ──────────────────────────────────────────────────────────────
+const LIMITS = {
+  user: {
+    img_permanent:  5   * 1024 * 1024,   // 5MB  → simpan selamanya
+    img_temp:       50  * 1024 * 1024,   // 50MB → 24 jam
+    img_max:        50  * 1024 * 1024,   // max foto user
+    vid_temp:       100 * 1024 * 1024,   // 100MB → 24 jam
+    vid_max:        100 * 1024 * 1024,   // max video user
+  },
+  admin: {
+    img_max: 200 * 1024 * 1024,   // 200MB max
+    vid_max: 200 * 1024 * 1024,   // 200MB max
+  }
+};
+
+// Tentukan tier media berdasarkan role dan ukuran
+// Return: { allowed, isTemp, label }
+function getMediaTier(file, isVid){
+  const size = file.size;
+  const isPrivileged = myRole === 'owner' || myRole === 'admin';
+
+  if(isPrivileged){
+    const max = isVid ? LIMITS.admin.vid_max : LIMITS.admin.img_max;
+    if(size > max) return { allowed:false, isTemp:false, label:'File terlalu besar (max 200MB)' };
+    return { allowed:true, isTemp:false, label:'Permanen (admin/owner)' };
+  }
+
+  // User biasa
+  if(isVid){
+    if(size > LIMITS.user.vid_max) return { allowed:false, isTemp:false, label:`Video max 100MB. File ini ${fmtBytes(size)}.` };
+    return { allowed:true, isTemp:true, label:`Video dikirim — hilang dalam 24 jam ⏳` };
+  } else {
+    if(size > LIMITS.user.img_max) return { allowed:false, isTemp:false, label:`Foto max 50MB. File ini ${fmtBytes(size)}.` };
+    const isTemp = size > LIMITS.user.img_permanent;
+    return { allowed:true, isTemp, label: isTemp ? `Foto besar — hilang dalam 24 jam ⏳` : `Permanen ✅` };
+  }
+}
+
+function handleFileSelect(e){
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+
+  const ALLOWED_IMG = ['image/jpeg','image/png','image/gif','image/webp','image/heic','image/heif'];
+  const ALLOWED_VID = ['video/mp4','video/webm','video/quicktime','video/x-matroska','video/3gpp'];
+  let blocked = [];
+
+  for(const file of files){
+    const isVid = ALLOWED_VID.includes(file.type) || file.type.startsWith('video/');
+    const isImg = ALLOWED_IMG.includes(file.type) || file.type.startsWith('image/');
+
+    if(!isVid && !isImg){
+      showToast(`❌ Format tidak didukung: ${file.name}`);
+      continue;
+    }
+
+    const tier = getMediaTier(file, isVid);
+    if(!tier.allowed){
+      blocked.push({ name: file.name, size: fmtBytes(file.size), reason: tier.label });
+      continue;
+    }
+
+    const previewUrl = isVid ? null : URL.createObjectURL(file);
+    pendingFiles.push({
+      file, previewUrl,
+      type: isVid ? 'video' : 'image',
+      name: file.name,
+      isTemp: tier.isTemp,
+      tierLabel: tier.label
+    });
+  }
+
+  if(blocked.length > 0){
+    const detail = blocked.map(b => `• ${b.name} (${b.size})\n  ${b.reason}`).join('\n');
+    showBlockedAlert(`File berikut DITOLAK:\n\n${detail}`);
+  }
+
+  renderMediaPreview();
+}
+
+function showBlockedAlert(msg){
+  document.getElementById('upload-blocked-alert')?.remove();
+  const el = document.createElement('div');
+  el.id = 'upload-blocked-alert';
+  el.style.cssText = `position:fixed;top:0;left:50%;transform:translateX(-50%);max-width:360px;width:calc(100% - 32px);background:#1a0a0a;border:1.5px solid #ef4444;color:#fca5a5;border-radius:0 0 16px 16px;padding:14px 16px;font-size:12px;line-height:1.7;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,0.7);font-family:inherit;white-space:pre-line;`;
+  el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+    <div><b style="color:#ef4444;font-size:13px;">⛔ File Ditolak</b><br>${msg.replace(/\n/g,'<br>')}</div>
+    <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#fca5a5;font-size:18px;cursor:pointer;flex-shrink:0;line-height:1;">×</button>
+  </div>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 7000);
+}
+
+function fmtBytes(b){
+  if(b < 1024*1024) return (b/1024).toFixed(0)+'KB';
+  return (b/(1024*1024)).toFixed(1)+'MB';
+}
+
+function renderMediaPreview(){
+  const s = document.getElementById('media-preview-strip');
+  if(!pendingFiles.length){ s.classList.remove('visible'); s.innerHTML=''; return; }
+  s.classList.add('visible');
+  s.innerHTML = pendingFiles.map((f,i) => {
+    const isVid = f.type === 'video';
+    const thumb = isVid
+      ? `<div style="width:100%;height:100%;background:#0a0f1e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">
+           <i class="fa fa-film" style="color:#60a5fa;font-size:20px;"></i>
+           <span style="font-size:7px;color:#94a3b8;text-align:center;padding:0 3px;line-height:1.3;">${fmtBytes(f.file.size)}</span>
+           ${f.isTemp?`<span style="font-size:7px;color:#f59e0b;">⏳24j</span>`:''}
+         </div>`
+      : `<div style="position:relative;width:100%;height:100%;">
+           <img src="${f.previewUrl}" alt="" style="width:100%;height:100%;object-fit:cover;">
+           ${f.isTemp?`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(245,158,11,.85);font-size:7px;font-weight:700;color:#fff;text-align:center;padding:2px;">⏳ 24j</div>`:''}
+         </div>`;
+    return `<div class="media-thumb" title="${esc(f.name)} — ${f.tierLabel}">
+      ${thumb}
+      <button class="media-thumb-rm" onclick="removePendingFile(${i})">✕</button>
+      <span class="media-thumb-type">${isVid?'VID':'IMG'}</span>
+    </div>`;
+  }).join('');
+}
+
+function removePendingFile(i){
+  const f = pendingFiles[i];
+  if(f?.previewUrl) URL.revokeObjectURL(f.previewUrl);
+  pendingFiles.splice(i, 1);
+  renderMediaPreview();
+}
+
+async function uploadToCloudinary(file, type, isTemp, onProgress){
+  return new Promise((resolve, reject) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', PRESET);
+
+    // Kalau temp, minta Cloudinary hapus otomatis setelah 24 jam
+    // Cloudinary invalidation via eager + invalidate flag
+    // Untuk unsigned upload, kita simpan public_id dan scheduled delete via API nanti
+    // Tapi karena unsigned, kita pakai folder khusus buat temp
+    if(isTemp){
+      fd.append('folder', 'xrezzky_temp');
+      fd.append('tags', 'temp_24h');
+    } else {
+      fd.append('folder', 'xrezzky_media');
+    }
+
+    const xhr = new XMLHttpRequest();
+    const rt = type === 'video' ? 'video' : 'image';
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD}/${rt}/upload`);
+
+    xhr.upload.onprogress = e => {
+      if(e.lengthComputable && onProgress) onProgress(Math.round((e.loaded/e.total)*100));
+    };
+
+    xhr.onload = () => {
+      if(xhr.status >= 200 && xhr.status < 300){
+        try {
+          const data = JSON.parse(xhr.responseText);
+          resolve({
+            url:       data.secure_url,
+            public_id: data.public_id
+          });
+        } catch { reject(new Error('Response parse error')); }
+      } else {
+        reject(new Error(`Upload gagal: HTTP ${xhr.status}`));
+      }
+    };
+
+    xhr.onerror   = () => reject(new Error('Network error — cek koneksi'));
+    xhr.ontimeout = () => reject(new Error('Upload timeout'));
+    xhr.timeout   = 180000; // 3 menit max (untuk file besar)
+    xhr.send(fd);
+  });
+}
+
+async function sendMediaFiles(){
+  if(!activeConvoId || !pendingFiles.length) return;
+
+  const {data:{session}} = await sb.auth.getSession();
+  if(!session){ showToast('Sesi habis, silakan login ulang.'); showScreen('screen-auth'); return; }
+
+  const files   = [...pendingFiles];
+  const caption = document.getElementById('msg-input').value.trim();
+  document.getElementById('msg-input').value = '';
+  autoResize(document.getElementById('msg-input'));
+  pendingFiles = [];
+  renderMediaPreview();
+
+  const sendBtn  = document.querySelector('.send-btn');
+  const mediaBtn = document.querySelector('.media-btn');
+  sendBtn.disabled = true;
+  if(mediaBtn) mediaBtn.style.pointerEvents = 'none';
+
+  let successCount = 0;
+
+  for(let i = 0; i < files.length; i++){
+    const { file, type, previewUrl, isTemp, name: fname } = files[i];
+    const label = `${i+1}/${files.length}: ${fname}`;
+    showToast(`⏫ Mengupload ${label} (0%)`);
+
+    try {
+      const { url, public_id } = await uploadToCloudinary(file, type, isTemp, pct => {
+        showToast(`⏫ ${label} — ${pct}%`);
+      });
+
+      // Hitung expires_at kalau temp
+      const expiresAt = isTemp
+        ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        : null;
+
+      const {error: msgErr} = await sb.from('messages').insert({
+        conversation_id: activeConvoId,
+        sender_id:       ME.id,
+        text:            (i===0 && caption) ? caption : '',
+        is_read:         false,
+        is_request:      false,
+        reply_to_id:     (i===0 && replyTo?.id) ? replyTo.id : null,
+        reactions:       {},
+        media_url:       url,
+        media_type:      type,
+        media_name:      fname,
+        media_public_id: public_id,   // untuk delete dari Cloudinary
+        media_expires_at: expiresAt,  // null = permanen
+      });
+
+      if(msgErr){
+        showToast(`❌ Gagal kirim ${fname}: ${msgErr.message}`);
+      } else {
+        successCount++;
+        await sb.from('conversations').update({updated_at:new Date().toISOString()}).eq('id',activeConvoId);
+
+        // Kalau temp, jadwalkan cleanup di background (cek saat render)
+        if(isTemp) scheduleLocalExpiry(public_id, expiresAt, type);
+      }
+
+      if(previewUrl) URL.revokeObjectURL(previewUrl);
+
+    } catch(err){
+      console.error('upload error:', err);
+      showToast(`❌ ${fname}: ${err.message}`);
+    }
+  }
+
+  sendBtn.disabled = false;
+  if(mediaBtn) mediaBtn.style.pointerEvents = '';
+  cancelReply();
+  if(successCount > 0){
+    showToast(`✅ ${successCount} file terkirim!`);
+  }
+}
+
+// Simpan jadwal expiry di localStorage (fallback visual)
+function scheduleLocalExpiry(publicId, expiresAt, type){
+  if(!publicId || !expiresAt) return;
+  const key = 'xrezzky_expiry';
+  const list = JSON.parse(localStorage.getItem(key)||'[]');
+  list.push({ public_id:publicId, expires_at:expiresAt, type });
+  localStorage.setItem(key, JSON.stringify(list));
+}
+
+// Cek expired media setiap kali app buka
+function checkExpiredMedia(){
+  const key  = 'xrezzky_expiry';
+  const list = JSON.parse(localStorage.getItem(key)||'[]');
+  const now  = Date.now();
+  const remaining = list.filter(item => new Date(item.expires_at).getTime() > now);
+  localStorage.setItem(key, JSON.stringify(remaining));
+  // Soft delete pesan dengan media yang sudah expired dari DB
+  const expired = list.filter(item => new Date(item.expires_at).getTime() <= now);
+  for(const item of expired){
+    sb.from('messages')
+      .update({ media_url: null, media_public_id: null, deleted_at: new Date().toISOString() })
+      .eq('media_public_id', item.public_id)
+      .then(() => console.log('expired media cleared:', item.public_id));
+  }
+}
 
 // ════════════════════════════════
 //  STATE
@@ -579,6 +1024,8 @@ let msgCh = null, typingCh = null, presCh = null, convoCh = null, followCh = nul
 let searchTimer = null, typingShowTimer = null;
 let pendingFiles = [], lightboxMedia = null;
 let followMap = {}, allUsers = [];
+let blockSet = new Set();   // set of user IDs yang lo blokir
+let myRole = 'user';        // 'owner' | 'admin' | 'user'
 let _appInited = false;
 
 const EMOJIS = ['😀','😂','🥰','😎','🤔','😅','🥺','😭','🤯','🎉','🔥','💯','👍','👏','🙏','💪','✨','⚡','💎','🚀','❤️','💙','💚','💛','🧡','🤍','👻','🤖','🦄','🎮','🎯','💬','🏆','🌟','🤝','✅','❌','⚠️','💰','🎁','🌈'];
@@ -658,12 +1105,17 @@ sb.auth.onAuthStateChange(async (event, session) => {
       return; // sudah init, skip
     }
     ME = session.user;
-    try { await loadMyProfile(); } catch(e) { console.error('loadMyProfile:', e); }
+
+    // Langsung masuk app dulu — jangan nunggu loadMyProfile
     showScreen('screen-app');
+
     if (!_appInited) {
       _appInited = true;
       initApp();
     }
+
+    // Load profil di background setelah app tampil
+    loadMyProfile().catch(e => console.error('loadMyProfile:', e));
     return;
   }
 
@@ -673,7 +1125,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
-// ── FALLBACK: kalau onAuthStateChange ga fire dalam 1 detik
+// ── FALLBACK: kalau onAuthStateChange ga fire dalam 500ms
 setTimeout(async () => {
   const splash = document.getElementById('screen-splash');
   if (!splash) return;
@@ -682,10 +1134,10 @@ setTimeout(async () => {
     if (session?.user) {
       if (!_appInited) {
         ME = session.user;
-        try { await loadMyProfile(); } catch(e) {}
         showScreen('screen-app');
         _appInited = true;
         initApp();
+        loadMyProfile().catch(e => console.error('fallback loadMyProfile:', e));
       }
     } else {
       showScreen('screen-auth');
@@ -693,7 +1145,7 @@ setTimeout(async () => {
   } catch(e) {
     showScreen('screen-auth');
   }
-}, 1000);
+}, 500);
 
 // ── HARD TIMEOUT 8 detik
 setTimeout(() => {
@@ -740,8 +1192,8 @@ function showSuccess(msg) {
   el.style.display = 'block';
 }
 
-// Wrapper: auth call dengan timeout maksimal
-async function authWithTimeout(promise, ms = 10000) {
+// Wrapper: auth call dengan timeout maksimal 6 detik
+async function authWithTimeout(promise, ms = 6000) {
   let timer;
   const timeout = new Promise((_, reject) => {
     timer = setTimeout(() => reject(new Error('TIMEOUT')), ms);
@@ -871,65 +1323,102 @@ async function doLogout() {
 }
 
 async function loadMyProfile() {
+  const fallback = {
+    id: ME.id,
+    username: ME.email.split('@')[0],
+    email: ME.email,
+    bio: '',
+    role: 'user'
+  };
+  if (!MY_PROFILE) {
+    MY_PROFILE = fallback;
+    updateSidebarUI();
+  }
+
   try {
-    const { data } = await authWithTimeout(
+    const { data, error } = await Promise.race([
       sb.from('users').select('*').eq('id', ME.id).single(),
-      5000
-    );
-    MY_PROFILE = data;
-    if (!MY_PROFILE) {
-      // User belum ada di tabel users — insert di background
-      const newProfile = {
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000))
+    ]);
+
+    if (!error && data) {
+      MY_PROFILE = data;
+      myRole = data.role || 'user';
+
+      // Cek apakah user di-ban
+      const { data: ban } = await sb.from('bans').select('reason').eq('user_id', ME.id).single();
+      if (ban) {
+        await sb.auth.signOut();
+        showScreen('screen-auth');
+        setTimeout(() => showError(`Akun kamu di-ban. Alasan: ${ban.reason}`), 300);
+        return;
+      }
+
+      updateSidebarUI();
+    } else if (error?.code === 'PGRST116') {
+      sb.from('users').upsert({
         id: ME.id,
         username: ME.email.split('@')[0],
         email: ME.email,
-        bio: ''
-      };
-      sb.from('users').insert(newProfile).then(({ error: e }) => {
-        if (!e) MY_PROFILE = newProfile;
-        else console.error('insert profile error:', e.message);
+        bio: '',
+        role: 'user',
+        created_at: new Date().toISOString()
+      }).then(({ error: e }) => {
+        if (e) console.error('upsert profile:', e.message);
       });
-      MY_PROFILE = newProfile; // optimistic
     }
   } catch(e) {
-    console.error('loadMyProfile error:', e.message);
-    // Fallback: pakai data dari auth session aja
-    MY_PROFILE = {
-      id: ME.id,
-      username: ME.email.split('@')[0],
-      email: ME.email,
-      bio: ''
-    };
+    console.warn('loadMyProfile timeout/error:', e.message);
   }
-  updateSidebarUI();
 }
 
 async function updateSidebarUI(){
   if(!MY_PROFILE) return;
-  const av=avatarUrl(MY_PROFILE.username);
-  document.getElementById('sb-avatar').src=av; document.getElementById('sb-avatar').style.display='block'; document.getElementById('sb-avatar-icon').style.display='none';
-  document.getElementById('pd-avatar').src=av;
-  document.getElementById('pd-name').innerText=MY_PROFILE.username;
-  document.getElementById('pd-email').innerText=ME.email;
-  document.getElementById('pd-bio-sub').innerText=MY_PROFILE.bio||'Tambahkan bio singkat';
-  const [{count:flwing},{count:flwrs}]=await Promise.all([
+  myRole = MY_PROFILE.role || 'user';
+  const av = avatarUrl(MY_PROFILE.username);
+  document.getElementById('sb-avatar').src = av;
+  document.getElementById('sb-avatar').style.display = 'block';
+  document.getElementById('sb-avatar-icon').style.display = 'none';
+  document.getElementById('pd-avatar').src = av;
+  document.getElementById('pd-name').innerText = MY_PROFILE.username;
+  document.getElementById('pd-email').innerText = ME.email;
+  document.getElementById('pd-bio-sub').innerText = MY_PROFILE.bio||'Tambahkan bio singkat';
+
+  // Role badge di profil drawer
+  const roleEl = document.getElementById('pd-role-badge');
+  if(roleEl) roleEl.innerHTML = getRoleBadgeHTML(myRole);
+
+  // Tampilkan/sembunyikan admin button di sidebar
+  const adminBtn = document.getElementById('admin-panel-btn');
+  if(adminBtn) adminBtn.style.display = (myRole==='owner'||myRole==='admin') ? 'flex' : 'none';
+
+  const [{count:flwing},{count:flwrs}] = await Promise.all([
     sb.from('follows').select('*',{count:'exact',head:true}).eq('sender_id',ME.id).eq('status','accepted'),
     sb.from('follows').select('*',{count:'exact',head:true}).eq('receiver_id',ME.id).eq('status','accepted'),
   ]);
-  document.getElementById('pd-following').innerText=flwing||0;
-  document.getElementById('pd-followers').innerText=flwrs||0;
+  document.getElementById('pd-following').innerText = flwing||0;
+  document.getElementById('pd-followers').innerText = flwrs||0;
 }
 
 // ════════════════════════════════
 //  INIT
 // ════════════════════════════════
 function initApp(){
-  initEmojiGrid(); loadConvos(); loadFollowMap(); loadPeopleList(); upsertPresence(true);
-  subscribeConvos(); subscribeFollows(); startRealtimeClock();
-  window._presInt=setInterval(()=>upsertPresence(true),25000);
-  window.addEventListener('beforeunload',()=>upsertPresence(false));
-  document.addEventListener('visibilitychange',()=>upsertPresence(!document.hidden));
-  document.addEventListener('click',e=>{ if(!document.getElementById('ctx-menu').contains(e.target)) hideCtxMenu(); });
+  initEmojiGrid();
+  loadConvos();
+  loadFollowMap();
+  loadBlockSet();
+  loadPeopleList();
+  upsertPresence(true);
+  subscribeConvos();
+  subscribeFollows();
+  startRealtimeClock();
+  checkExpiredMedia(); // cek media kedaluwarsa
+  myRole = MY_PROFILE?.role || 'user';
+  window._presInt = setInterval(()=>upsertPresence(true), 25000);
+  window.addEventListener('beforeunload', ()=>upsertPresence(false));
+  document.addEventListener('visibilitychange', ()=>upsertPresence(!document.hidden));
+  document.addEventListener('click', e=>{ if(!document.getElementById('ctx-menu').contains(e.target)) hideCtxMenu(); });
 }
 function cleanupChannels(){ [msgCh,typingCh,presCh,convoCh,followCh].forEach(c=>{ if(c) sb.removeChannel(c); }); clearInterval(window._presInt); }
 
@@ -1264,19 +1753,32 @@ function filterConvos(v){ document.querySelectorAll('.convo-item').forEach(el=>{
 // ════════════════════════════════
 //  OPEN CONVO
 // ════════════════════════════════
-async function openConvo(convoId,partnerId,partnerName,partnerEmail){
-  activeConvoId=convoId; activePartner={id:partnerId,username:partnerName,email:partnerEmail};
-  document.getElementById('ch-avatar').src=avatarUrl(partnerName);
-  document.getElementById('ch-name').innerText=partnerName;
-  document.getElementById('ch-status').innerText='...'; document.getElementById('ch-status').className='chat-partner-status';
-  document.getElementById('empty-state').style.display='none';
-  document.getElementById('chat-ui').style.display='flex';
+async function openConvo(convoId, partnerId, partnerName, partnerEmail){
+  activeConvoId = convoId;
+  activePartner = {id:partnerId, username:partnerName, email:partnerEmail};
+
+  document.getElementById('ch-avatar').src = avatarUrl(partnerName);
+  document.getElementById('ch-name').innerText = partnerName;
+  document.getElementById('ch-status').innerText = '...';
+  document.getElementById('ch-status').className = 'chat-partner-status';
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('chat-ui').style.display = 'flex';
   document.getElementById('sidebar').classList.add('hidden-mobile');
   document.getElementById('chatroom').classList.add('show-mobile');
-  document.querySelectorAll('.convo-item').forEach(el=>{ el.classList.toggle('active',el.onclick?.toString().includes(convoId)); });
-  await refreshPartnerPresence(); await loadMessages(); await markRead();
-  subscribeMessages(convoId); subscribePartnerPresence(partnerId); subscribeTyping(convoId);
-  loadConvos(); document.getElementById('msg-input').focus();
+
+  document.querySelectorAll('.convo-item').forEach(el => {
+    el.classList.toggle('active', el.onclick?.toString().includes(convoId));
+  });
+
+  await refreshPartnerPresence();
+  await loadMessages();
+  await markRead();
+  await updateChatInputState(); // cek status chat
+  subscribeMessages(convoId);
+  subscribePartnerPresence(partnerId);
+  subscribeTyping(convoId);
+  loadConvos();
+  document.getElementById('msg-input').focus();
 }
 
 async function refreshPartnerPresence(){
@@ -1292,7 +1794,11 @@ async function refreshPartnerPresence(){
 //  MESSAGES
 // ════════════════════════════════
 async function loadMessages(){
-  const {data}=await sb.from('messages').select('*').eq('conversation_id',activeConvoId).order('created_at',{ascending:true});
+  const {data}=await sb.from('messages')
+    .select('id,conversation_id,sender_id,text,is_read,is_request,reply_to_id,reactions,media_url,media_type,media_name,media_public_id,media_expires_at,deleted_at,created_at')
+    .eq('conversation_id',activeConvoId)
+    .is('deleted_at',null)
+    .order('created_at',{ascending:true});
   msgs=data||[]; renderMessages(); scrollBottom();
 }
 
@@ -1317,14 +1823,49 @@ function buildMsgHTML(m){
   let bubbleContent='', bubbleClass='msg-bubble';
   if(m.media_url){
     bubbleClass+=' media-bubble';
-    const fname=m.media_name||(m.media_type==='video'?'video.mp4':'foto.jpg');
+    const fname = m.media_name||(m.media_type==='video'?'video.mp4':'foto.jpg');
+
+    // Hitung sisa waktu kalau ada expiry
+    let expiryBadge = '';
+    if(m.media_expires_at){
+      const remaining = new Date(m.media_expires_at) - new Date();
+      if(remaining > 0){
+        const hrs = Math.floor(remaining / 3600000);
+        const min = Math.floor((remaining % 3600000) / 60000);
+        const label = hrs > 0 ? `⏳ ${hrs}j ${min}m lagi` : `⏳ ${min}m lagi`;
+        expiryBadge = `<div style="font-size:9px;color:#f59e0b;font-weight:700;padding:2px 6px 4px;text-align:center;">${label} — media hilang otomatis</div>`;
+      } else {
+        expiryBadge = `<div style="font-size:9px;color:#94a3b8;padding:2px 6px 4px;text-align:center;">Media sudah dihapus</div>`;
+      }
+    }
+
     if(m.media_type==='video'){
-      bubbleContent=`<video class="msg-media-video" controls preload="none"><source src="${m.media_url}" type="video/mp4"></video><div class="msg-media-footer"><span class="msg-media-name">🎥 ${esc(fname)}</span><button class="msg-download-btn" onclick="downloadMedia('${m.media_url}','${esc(fname)}',event)"><i class="fa fa-download"></i> Unduh</button></div>`;
+      bubbleContent=`<video class="msg-media-video" controls preload="none"><source src="${m.media_url}" type="video/mp4"></video>
+        <div class="msg-media-footer">
+          <span class="msg-media-name">🎥 ${esc(fname)}</span>
+          <button class="msg-download-btn" onclick="downloadMedia('${m.media_url}','${esc(fname)}',event)"><i class="fa fa-download"></i> Unduh</button>
+        </div>${expiryBadge}`;
     } else {
-      bubbleContent=`<img class="msg-media-img" src="${m.media_url}" alt="foto" loading="lazy" onclick="openLightbox('${m.media_url}','image','${esc(fname)}')"><div class="msg-media-footer"><span class="msg-media-name">🖼️ ${esc(fname)}</span><button class="msg-download-btn" onclick="downloadMedia('${m.media_url}','${esc(fname)}',event)"><i class="fa fa-download"></i> Unduh</button></div>`;
+      bubbleContent=`<img class="msg-media-img" src="${m.media_url}" alt="foto" loading="lazy" onclick="openLightbox('${m.media_url}','image','${esc(fname)}')">
+        <div class="msg-media-footer">
+          <span class="msg-media-name">🖼️ ${esc(fname)}</span>
+          <button class="msg-download-btn" onclick="downloadMedia('${m.media_url}','${esc(fname)}',event)"><i class="fa fa-download"></i> Unduh</button>
+        </div>${expiryBadge}`;
     }
     if(m.text) bubbleContent+=`<div style="padding:6px 6px 2px;font-size:14px;">${esc(m.text)}</div>`;
-  } else { bubbleContent=`<span>${esc(m.text||'')}</span>`; }
+
+  } else if(m.media_type && !m.media_url){
+    // Media sudah expired / dihapus
+    bubbleClass+=' media-bubble';
+    const icon = m.media_type==='video' ? '🎥' : '🖼️';
+    bubbleContent=`<div style="padding:16px;text-align:center;color:var(--text3);">
+      <div style="font-size:28px;margin-bottom:6px;opacity:.4;">${icon}</div>
+      <div style="font-size:11px;font-weight:600;">Media sudah dihapus</div>
+      <div style="font-size:10px;margin-top:2px;opacity:.6;">Berlaku 24 jam setelah dikirim</div>
+    </div>`;
+  } else {
+    bubbleContent=`<span>${esc(m.text||'')}</span>`;
+  }
   return `<div class="msg-row${isMe?' me':' them'}" data-id="${m.id}" oncontextmenu="showCtx(event,'${m.id}')">
     ${!isMe?`<img class="msg-avatar" src="${avatarUrl(activePartner?.username||'?')}">`:''}
     <div class="msg-bubble-wrap"><div class="${bubbleClass}" onclick="handleBubbleClick(event,'${m.id}')">${replyHTML}${bubbleContent}</div><div class="msg-meta"><span>${time}</span>${tick}</div>${reactHTML}</div>
@@ -1361,9 +1902,13 @@ async function sendMsg(){
   const input=document.getElementById('msg-input'), text=input.value.trim();
   if(!text) return;
 
-  // Cek session masih valid
   const {data:{session}} = await sb.auth.getSession();
   if(!session){ showToast('Sesi habis, silakan login ulang.'); showScreen('screen-auth'); return; }
+
+  // Cek apakah ini pesan pertama / request mode
+  const {data:convo} = await sb.from('conversations').select('chat_status').eq('id',activeConvoId).single();
+  const isMutual = followMap[activePartner?.id]==='accepted';
+  const isRequest = convo?.chat_status==='pending' && !isMutual;
 
   input.value=''; autoResize(input); hideTypingIndicator();
   const replyId = replyTo?.id || null;
@@ -1374,232 +1919,24 @@ async function sendMsg(){
     sender_id: ME.id,
     text,
     is_read: false,
+    is_request: isRequest,
     reply_to_id: replyId,
     reactions: {}
   });
 
   if(error){
     console.error('sendMsg error:', error);
-    // Kalau RLS error, kemungkinan conversation belum dibuat dengan benar
-    if(error.code === '42501' || error.message?.includes('policy')){
-      showToast('❌ Tidak bisa kirim pesan. Coba follow ulang user ini.');
-    } else {
-      showToast('❌ Gagal kirim: ' + error.message);
-    }
-    // Kembalikan teks ke input
-    input.value = text; autoResize(input);
+    if(error.code==='42501'||error.message?.includes('policy'))
+      showToast('❌ Tidak bisa kirim pesan. Follow user ini dulu.');
+    else
+      showToast('❌ Gagal kirim: '+error.message);
+    input.value=text; autoResize(input);
     return;
   }
-  // conversations.updated_at diupdate otomatis oleh trigger SQL
-  // Tapi kalau trigger belum ada, update manual
   await sb.from('conversations').update({updated_at:new Date().toISOString()}).eq('id',activeConvoId);
+  if(isRequest) await updateChatInputState();
 }
 
-// ════════════════════════════════
-//  MEDIA UPLOAD
-// ════════════════════════════════
-function handleFileSelect(e){
-  const files = Array.from(e.target.files || []);
-  e.target.value = '';
-
-  const ALLOWED_IMG = ['image/jpeg','image/png','image/gif','image/webp','image/heic','image/heif'];
-  const ALLOWED_VID = ['video/mp4','video/webm','video/quicktime','video/x-matroska','video/3gpp'];
-  let blocked = [];
-
-  for(const file of files){
-    const isVid = ALLOWED_VID.includes(file.type) || file.type.startsWith('video/');
-    const isImg = ALLOWED_IMG.includes(file.type) || file.type.startsWith('image/');
-
-    if(!isVid && !isImg){
-      showToast(`❌ Format tidak didukung: ${file.name}`);
-      continue;
-    }
-
-    const maxSize = isVid ? MAX_VID : MAX_IMG;
-    if(file.size > maxSize){
-      blocked.push({ name: file.name, size: fmtBytes(file.size), max: isVid ? '10MB' : '5MB' });
-      continue;
-    }
-
-    // Untuk video: JANGAN buat blob URL — langsung simpan file object saja
-    // Blob URL video = browser decode seluruh video ke RAM = freeze
-    const previewUrl = isVid ? null : URL.createObjectURL(file);
-    pendingFiles.push({ file, previewUrl, type: isVid ? 'video' : 'image', name: file.name });
-  }
-
-  if(blocked.length > 0){
-    const detail = blocked.map(b => `• ${b.name} (${b.size}, max ${b.max})`).join('\n');
-    showBlockedAlert(`File berikut DITOLAK karena melebihi batas:\n\n${detail}\n\nFoto max 5MB, Video max 10MB.`);
-  }
-
-  renderMediaPreview();
-}
-
-function showBlockedAlert(msg){
-  // Hapus alert lama kalau ada
-  document.getElementById('upload-blocked-alert')?.remove();
-  const el = document.createElement('div');
-  el.id = 'upload-blocked-alert';
-  el.style.cssText = `
-    position:fixed;top:0;left:50%;transform:translateX(-50%);
-    max-width:360px;width:calc(100% - 32px);
-    background:#1a0a0a;border:1.5px solid #ef4444;color:#fca5a5;
-    border-radius:0 0 16px 16px;padding:14px 16px;font-size:12px;
-    line-height:1.7;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,0.7);
-    font-family:inherit;white-space:pre-line;
-  `;
-  el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
-    <div><b style="color:#ef4444;font-size:13px;">⛔ File Ditolak</b><br>${msg.replace(/\n/g,'<br>')}</div>
-    <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#fca5a5;font-size:18px;cursor:pointer;flex-shrink:0;line-height:1;">×</button>
-  </div>`;
-  document.body.appendChild(el);
-  // Auto hilang 6 detik
-  setTimeout(() => el.remove(), 6000);
-}
-
-function fmtBytes(b){
-  if(b < 1024*1024) return (b/1024).toFixed(0)+'KB';
-  return (b/(1024*1024)).toFixed(1)+'MB';
-}
-
-function renderMediaPreview(){
-  const s = document.getElementById('media-preview-strip');
-  if(!pendingFiles.length){ s.classList.remove('visible'); s.innerHTML=''; return; }
-  s.classList.add('visible');
-  s.innerHTML = pendingFiles.map((f,i) => {
-    const isVid = f.type === 'video';
-    // Video: JANGAN load src ke browser — cukup thumbnail icon biar ga freeze
-    const thumb = isVid
-      ? `<div style="width:100%;height:100%;background:#0a0f1e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
-           <i class="fa fa-film" style="color:#60a5fa;font-size:22px;"></i>
-           <span style="font-size:8px;color:#94a3b8;text-align:center;padding:0 4px;word-break:break-all;line-height:1.3;">${fmtBytes(f.file.size)}</span>
-         </div>`
-      : `<img src="${f.previewUrl}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
-
-    return `<div class="media-thumb" title="${esc(f.name)}">
-      ${thumb}
-      <button class="media-thumb-rm" onclick="removePendingFile(${i})">✕</button>
-      <span class="media-thumb-type">${isVid ? 'VID' : 'IMG'}</span>
-    </div>`;
-  }).join('');
-}
-
-function removePendingFile(i){
-  const f = pendingFiles[i];
-  if(f?.previewUrl) URL.revokeObjectURL(f.previewUrl); // video previewUrl = null, skip
-  pendingFiles.splice(i, 1);
-  renderMediaPreview();
-}
-
-async function uploadToCloudinary(file, type, onProgress){
-  return new Promise((resolve, reject) => {
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('upload_preset', PRESET);
-
-    const xhr = new XMLHttpRequest();
-    const rt = type === 'video' ? 'video' : 'image';
-    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD}/${rt}/upload`);
-
-    // Progress
-    xhr.upload.onprogress = e => {
-      if(e.lengthComputable && onProgress){
-        onProgress(Math.round((e.loaded / e.total) * 100));
-      }
-    };
-
-    xhr.onload = () => {
-      if(xhr.status >= 200 && xhr.status < 300){
-        try { resolve(JSON.parse(xhr.responseText).secure_url); }
-        catch { reject(new Error('Response parse error')); }
-      } else {
-        reject(new Error(`Upload gagal: HTTP ${xhr.status}`));
-      }
-    };
-
-    xhr.onerror = () => reject(new Error('Network error — cek koneksi'));
-    xhr.ontimeout = () => reject(new Error('Upload timeout'));
-    xhr.timeout = 120000; // 2 menit max
-
-    xhr.send(fd);
-  });
-}
-
-// Upload progress toast ID
-let _uploadToastInterval = null;
-
-async function sendMediaFiles(){
-  if(!activeConvoId || !pendingFiles.length) return;
-
-  // Cek session dulu
-  const { data: { session } } = await sb.auth.getSession();
-  if(!session){ showToast('Sesi habis, silakan login ulang.'); showScreen('screen-auth'); return; }
-
-  const files = [...pendingFiles];
-  const caption = document.getElementById('msg-input').value.trim();
-  document.getElementById('msg-input').value = '';
-  autoResize(document.getElementById('msg-input'));
-  pendingFiles = [];
-  renderMediaPreview();
-
-  // Disable send btn selama upload
-  const sendBtn = document.querySelector('.send-btn');
-  const mediaBtn = document.querySelector('.media-btn');
-  sendBtn.disabled = true;
-  if(mediaBtn) mediaBtn.style.pointerEvents = 'none';
-
-  let successCount = 0;
-
-  for(let i = 0; i < files.length; i++){
-    const { file, type, previewUrl } = files[i];
-    const label = `${i+1}/${files.length}: ${file.name}`;
-
-    // Toast progress
-    showToast(`⏫ Mengupload ${label} (0%)`);
-
-    try {
-      const url = await uploadToCloudinary(file, type, pct => {
-        showToast(`⏫ ${label} — ${pct}%`);
-      });
-
-      // Insert pesan
-      const { error: msgErr } = await sb.from('messages').insert({
-        conversation_id: activeConvoId,
-        sender_id: ME.id,
-        text: (i === 0 && caption) ? caption : '',
-        is_read: false,
-        reply_to_id: (i === 0 && replyTo?.id) ? replyTo.id : null,
-        reactions: {},
-        media_url: url,
-        media_type: type,
-        media_name: file.name
-      });
-
-      if(msgErr){
-        console.error('insert msg error:', msgErr);
-        showToast(`❌ Gagal kirim ${file.name}: ${msgErr.message}`);
-      } else {
-        successCount++;
-        await sb.from('conversations')
-          .update({ updated_at: new Date().toISOString() })
-          .eq('id', activeConvoId);
-      }
-
-      if(previewUrl) URL.revokeObjectURL(previewUrl);
-
-    } catch(err){
-      console.error('upload error:', err);
-      showToast(`❌ ${file.name}: ${err.message}`);
-    }
-  }
-
-  // Re-enable
-  sendBtn.disabled = false;
-  if(mediaBtn) mediaBtn.style.pointerEvents = '';
-
-  cancelReply();
-  if(successCount > 0) showToast(`✅ ${successCount} file terkirim!`);
-}
 async function downloadMedia(url,filename,e){
   if(e){e.preventDefault();e.stopPropagation();}
   try { const res=await fetch(url); const blob=await res.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
@@ -1628,15 +1965,16 @@ async function toggleReact(msgId,emoji){ const m=msgs.find(x=>x.id===msgId); if(
 // ════════════════════════════════
 //  CTX MENU
 // ════════════════════════════════
-function showCtx(e,msgId){
+function showCtx(e, msgId){
   e.preventDefault(); e.stopPropagation();
   const m=msgs.find(x=>x.id===msgId), isMe=m?.sender_id===ME.id;
   document.getElementById('ctx-reactions').innerHTML=REACT_EMOJIS.map(r=>`<div class="ctx-react-btn" onclick="toggleReact('${msgId}','${r}')">${r}</div>`).join('');
   let actions=`<div class="ctx-action" onclick="setReply('${msgId}')"><i class="fa fa-reply" style="color:var(--accent);width:16px;"></i>Balas</div>`;
   if(m?.media_url) actions+=`<div class="ctx-action" onclick="downloadMedia('${m.media_url}','${esc(m.media_name||'media')}')"><i class="fa fa-download" style="color:var(--green);width:16px;"></i>Unduh</div>`;
-  if(isMe) actions+=`<div class="ctx-action danger" onclick="deleteMsg('${msgId}')"><i class="fa fa-trash" style="width:16px;"></i>Hapus</div>`;
+  if(!isMe) actions+=`<div class="ctx-action" onclick="openReport('${m.sender_id}','${esc(activePartner?.username||'')}','${msgId}')"><i class="fa fa-flag" style="color:var(--red);width:16px;"></i>Laporkan</div>`;
+  if(isMe || myRole==='owner' || myRole==='admin') actions+=`<div class="ctx-action danger" onclick="deleteMsg('${msgId}')"><i class="fa fa-trash" style="width:16px;"></i>Hapus</div>`;
   document.getElementById('ctx-actions').innerHTML=actions;
-  const x=Math.min(e.clientX,window.innerWidth-230), y=Math.min(e.clientY,window.innerHeight-180);
+  const x=Math.min(e.clientX,window.innerWidth-230), y=Math.min(e.clientY,window.innerHeight-200);
   const menu=document.getElementById('ctx-menu'); menu.style.left=x+'px'; menu.style.top=y+'px'; menu.style.display='block';
 }
 function hideCtxMenu(){ document.getElementById('ctx-menu').style.display='none'; }
@@ -1695,6 +2033,170 @@ async function startChat(partnerId,partnerUsername,partnerEmail){
 // ════════════════════════════════
 //  PROFILE
 // ════════════════════════════════
+// ════════════════════════════════
+//  ADMIN PANEL
+// ════════════════════════════════
+let _adminTab = 'reports';
+
+function openAdminPanel(){
+  if(myRole!=='owner'&&myRole!=='admin'){ showToast('Akses ditolak.'); return; }
+  document.getElementById('modal-admin').classList.add('open');
+  document.getElementById('admin-role-label').innerHTML = getRoleBadgeHTML(myRole);
+  loadAdminStats();
+  switchAdminTab('reports');
+}
+
+function closeAdminPanel(){
+  document.getElementById('modal-admin').classList.remove('open');
+}
+
+function switchAdminTab(tab){
+  _adminTab = tab;
+  ['reports','users','bans'].forEach(t=>{
+    document.getElementById('atab-'+t).classList.toggle('active', t===tab);
+  });
+  if(tab==='reports') loadAdminReports();
+  else if(tab==='users') loadAdminUsers();
+  else if(tab==='bans') loadAdminBans();
+}
+
+async function loadAdminStats(){
+  const [
+    {count:totalUsers},
+    {count:totalMsgs},
+    {count:pendingReports},
+    {count:onlineUsers}
+  ] = await Promise.all([
+    sb.from('users').select('*',{count:'exact',head:true}),
+    sb.from('messages').select('*',{count:'exact',head:true}),
+    sb.from('reports').select('*',{count:'exact',head:true}).eq('status','pending'),
+    sb.from('user_presence').select('*',{count:'exact',head:true}).eq('is_online',true),
+  ]);
+  document.getElementById('stat-users').innerText   = totalUsers||0;
+  document.getElementById('stat-msgs').innerText    = totalMsgs||0;
+  document.getElementById('stat-reports').innerText = pendingReports||0;
+  document.getElementById('stat-online').innerText  = onlineUsers||0;
+}
+
+async function loadAdminReports(){
+  const el = document.getElementById('admin-content');
+  el.innerHTML = `<div style="padding:30px;text-align:center;"><span class="spinner"></span></div>`;
+  const {data:reports} = await sb.from('reports')
+    .select('*, reporter:reporter_id(username), reported:reported_id(username,email)')
+    .order('created_at',{ascending:false}).limit(50);
+  if(!reports?.length){
+    el.innerHTML=`<div class="convo-empty" style="padding:60px 20px;"><i class="fa fa-check-circle" style="color:var(--green);font-size:36px;opacity:.6;"></i><p>Tidak ada laporan masuk</p></div>`;
+    return;
+  }
+  const sColor={pending:'#f59e0b',reviewed:'#60a5fa',resolved:'#22c55e',dismissed:'#475569'};
+  const sLabel={pending:'Menunggu',reviewed:'Ditinjau',resolved:'Selesai',dismissed:'Diabaikan'};
+  el.innerHTML = reports.map(r=>`
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-size:13px;font-weight:700;">
+          <span style="color:var(--text3);">@${esc(r.reporter?.username||'?')}</span>
+          <span style="color:var(--text3);margin:0 4px;">→</span>
+          <span style="color:var(--red);">@${esc(r.reported?.username||'?')}</span>
+        </div>
+        <span style="font-size:10px;font-weight:700;color:${sColor[r.status]};background:${sColor[r.status]}22;padding:2px 8px;border-radius:99px;">${sLabel[r.status]}</span>
+      </div>
+      <div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:2px;">${esc(r.reason)}</div>
+      ${r.detail?`<div style="font-size:11px;color:var(--text3);margin-bottom:6px;">${esc(r.detail)}</div>`:''}
+      <div style="font-size:10px;color:var(--text3);margin-bottom:8px;">${fmtTime(r.created_at)}</div>
+      ${r.status==='pending'?`
+      <div style="display:flex;gap:8px;">
+        <button onclick="resolveReport('${r.id}','resolved')" style="flex:1;padding:7px;border-radius:8px;background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.25);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-check"></i> Selesaikan</button>
+        <button onclick="banUserFromReport('${r.reported_id}','${esc(r.reported?.username||'?')}')" style="flex:1;padding:7px;border-radius:8px;background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fa fa-ban"></i> Ban User</button>
+        <button onclick="resolveReport('${r.id}','dismissed')" style="padding:7px 12px;border-radius:8px;background:var(--surface2);color:var(--text3);border:1px solid var(--border);font-size:11px;cursor:pointer;font-family:inherit;">Abaikan</button>
+      </div>`:''}
+    </div>`).join('');
+}
+
+async function loadAdminUsers(){
+  const el = document.getElementById('admin-content');
+  el.innerHTML = `<div style="padding:30px;text-align:center;"><span class="spinner"></span></div>`;
+  const {data:users} = await sb.from('users').select('*, presence:user_presence(is_online)').order('created_at',{ascending:false});
+  if(!users?.length){ el.innerHTML=`<div class="convo-empty" style="padding:60px 20px;"><i class="fa fa-users"></i><p>Belum ada user</p></div>`; return; }
+  el.innerHTML = users.map(u=>{
+    const isOnline = u.presence?.is_online||false;
+    return `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);">
+      <div style="position:relative;flex-shrink:0;">
+        <img src="${avatarUrl(u.username)}" style="width:40px;height:40px;border-radius:50%;border:2px solid var(--border2);">
+        ${isOnline?`<div style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:var(--green);border-radius:50%;border:2px solid var(--bg2);"></div>`:''}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span style="font-size:13px;font-weight:700;">@${esc(u.username)}</span>
+          ${getRoleBadgeHTML(u.role)}
+        </div>
+        <div style="font-size:11px;color:var(--text3);">${esc(u.email)}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        ${u.id!==ME.id&&u.role!=='owner'?`
+          <button onclick="banUserAdmin('${u.id}','${esc(u.username)}')" title="Ban" style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);cursor:pointer;font-size:12px;"><i class="fa fa-ban"></i></button>
+          ${myRole==='owner'&&u.role==='user'?`<button onclick="promoteToAdmin('${u.id}','${esc(u.username)}')" title="Jadikan Admin" style="width:32px;height:32px;border-radius:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:var(--accent);cursor:pointer;font-size:12px;"><i class="fa fa-shield-halved"></i></button>`:''}
+        `:'<span style="font-size:10px;color:var(--text3);">—</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadAdminBans(){
+  const el = document.getElementById('admin-content');
+  el.innerHTML = `<div style="padding:30px;text-align:center;"><span class="spinner"></span></div>`;
+  const {data:bans} = await sb.from('bans').select('*, user:user_id(username,email), banner:banned_by(username)').order('created_at',{ascending:false});
+  if(!bans?.length){ el.innerHTML=`<div class="convo-empty" style="padding:60px 20px;"><i class="fa fa-check-circle" style="color:var(--green);font-size:36px;opacity:.6;"></i><p>Tidak ada user di-ban</p></div>`; return; }
+  el.innerHTML = bans.map(b=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);">
+      <img src="${avatarUrl(b.user?.username)}" style="width:40px;height:40px;border-radius:50%;border:2px solid rgba(239,68,68,.3);flex-shrink:0;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:#fca5a5;">@${esc(b.user?.username||'?')}</div>
+        <div style="font-size:11px;color:var(--text3);">${esc(b.reason||'-')} · oleh @${esc(b.banner?.username||'?')}</div>
+        <div style="font-size:10px;color:var(--text3);">${fmtTime(b.created_at)}</div>
+      </div>
+      <button onclick="unbanUser('${b.user_id}','${esc(b.user?.username||'?')}')" style="padding:6px 12px;border-radius:8px;background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0;"><i class="fa fa-unlock"></i> Unban</button>
+    </div>`).join('');
+}
+
+async function resolveReport(reportId, status){
+  await sb.from('reports').update({status, reviewed_by:ME.id, reviewed_at:new Date().toISOString()}).eq('id',reportId);
+  showToast(status==='resolved'?'✅ Laporan diselesaikan.':'Laporan diabaikan.');
+  loadAdminReports(); loadAdminStats();
+}
+
+async function banUserFromReport(userId, username){
+  await banUserAdmin(userId, username);
+  await sb.from('reports').update({status:'resolved',reviewed_by:ME.id,reviewed_at:new Date().toISOString(),admin_note:'User di-ban'}).eq('reported_id',userId).eq('status','pending');
+  loadAdminReports(); loadAdminStats();
+}
+
+async function banUserAdmin(userId, username){
+  if(userId===ME.id) return showToast('Tidak bisa ban diri sendiri.');
+  const reason = prompt(`Alasan ban @${username}:`,'Melanggar aturan');
+  if(reason===null) return;
+  const {error} = await sb.from('bans').upsert({user_id:userId,banned_by:ME.id,reason},{onConflict:'user_id'});
+  if(error) return showToast('Gagal ban: '+error.message);
+  showToast(`@${username} di-ban.`);
+  loadAdminUsers(); loadAdminStats();
+}
+
+async function unbanUser(userId, username){
+  if(!confirm(`Cabut ban @${username}?`)) return;
+  await sb.from('bans').delete().eq('user_id',userId);
+  showToast(`@${username} di-unban.`);
+  loadAdminBans(); loadAdminStats();
+}
+
+async function promoteToAdmin(userId, username){
+  if(myRole!=='owner') return showToast('Hanya owner yang bisa promote admin.');
+  if(!confirm(`Jadikan @${username} sebagai Admin?`)) return;
+  const {error} = await sb.from('users').update({role:'admin'}).eq('id',userId);
+  if(error) return showToast('Gagal: '+error.message);
+  showToast(`@${username} sekarang Admin 🛡️`);
+  loadAdminUsers();
+}
+
 function openProfileDrawer(){ document.getElementById('profile-drawer').classList.add('open'); updateSidebarUI(); }
 function closeProfileDrawer(){ document.getElementById('profile-drawer').classList.remove('open'); }
 async function changeUsername(){ const n=prompt('Username baru:',MY_PROFILE?.username||''); if(!n||!n.trim()) return; await sb.from('users').update({username:n.trim()}).eq('id',ME.id); MY_PROFILE.username=n.trim(); updateSidebarUI(); showToast('Username diubah!'); allUsers=allUsers.map(u=>u.id===ME.id?{...u,username:n.trim()}:u); }
@@ -1776,8 +2278,263 @@ function startRealtimeClock(){
 //  UTILS
 // ════════════════════════════════
 // ════════════════════════════════
-//  USER PROFILE MODAL
+//  BLOCKS
 // ════════════════════════════════
+async function loadBlockSet(){
+  const { data } = await sb.from('blocks').select('blocked_id').eq('blocker_id', ME.id);
+  blockSet = new Set((data||[]).map(b => b.blocked_id));
+}
+
+async function blockUser(targetId, targetUsername){
+  if(!confirm(`Blokir @${targetUsername}? Mereka tidak bisa mengirim pesan ke kamu.`)) return;
+  await sb.from('blocks').upsert({blocker_id:ME.id, blocked_id:targetId},{onConflict:'blocker_id,blocked_id'});
+  blockSet.add(targetId);
+  // Unfollow juga
+  await sb.from('follows').delete().eq('sender_id',ME.id).eq('receiver_id',targetId);
+  delete followMap[targetId];
+  showToast(`@${targetUsername} diblokir.`);
+  renderPeopleList(allUsers);
+  closeUserProfile();
+  if(activePartner?.id === targetId) updateChatInputState();
+}
+
+async function unblockUser(targetId, targetUsername){
+  if(!confirm(`Buka blokir @${targetUsername}?`)) return;
+  await sb.from('blocks').delete().eq('blocker_id',ME.id).eq('blocked_id',targetId);
+  blockSet.delete(targetId);
+  showToast(`@${targetUsername} tidak lagi diblokir.`);
+  renderPeopleList(allUsers);
+  if(activePartner?.id === targetId) updateChatInputState();
+}
+
+function unblockFromBanner(){
+  if(activePartner) unblockUser(activePartner.id, activePartner.username);
+}
+
+async function isBlockedBy(targetId){
+  // Cek apakah target memblokir kita
+  const { data } = await sb.from('blocks').select('id').eq('blocker_id',targetId).eq('blocked_id',ME.id).single();
+  return !!data;
+}
+
+// ════════════════════════════════
+//  CHAT STATUS & REQUEST SYSTEM
+// ════════════════════════════════
+async function updateChatInputState(){
+  if(!activeConvoId || !activePartner) return;
+
+  const inputBar    = document.getElementById('input-bar');
+  const reqBanner   = document.getElementById('request-banner');
+  const blockedBan  = document.getElementById('blocked-banner');
+  const lockedBar   = document.getElementById('chat-locked-bar');
+
+  // Reset semua
+  inputBar.style.display    = '';
+  reqBanner.style.display   = 'none';
+  blockedBan.style.display  = 'none';
+  lockedBar.style.display   = 'none';
+
+  // Cek blokir
+  if(blockSet.has(activePartner.id)){
+    inputBar.style.display   = 'none';
+    blockedBan.style.display = 'flex';
+    document.getElementById('blocked-banner-text').innerText = `Kamu memblokir @${activePartner.username}.`;
+    return;
+  }
+
+  // Cek diblokir oleh partner
+  const blockedByThem = await isBlockedBy(activePartner.id);
+  if(blockedByThem){
+    inputBar.style.display   = 'none';
+    blockedBan.style.display = 'flex';
+    document.getElementById('blocked-banner-text').innerText = 'Kamu tidak bisa mengirim pesan ke pengguna ini.';
+    const unblockBtn = blockedBan.querySelector('button');
+    if(unblockBtn) unblockBtn.style.display = 'none';
+    return;
+  }
+
+  // Cek status conversation
+  const { data: convo } = await sb.from('conversations').select('chat_status').eq('id',activeConvoId).single();
+  const isMutual = followMap[activePartner.id] === 'accepted';
+
+  if(convo?.chat_status === 'active' || isMutual){
+    // Chat normal
+    return;
+  }
+
+  // Status pending — cek apakah kita yang kirim request atau yang nerima
+  const { data: myMsg } = await sb.from('messages')
+    .select('id').eq('conversation_id',activeConvoId).eq('sender_id',ME.id).eq('is_request',true).single();
+
+  const { data: theirMsg } = await sb.from('messages')
+    .select('id,sender_id').eq('conversation_id',activeConvoId).eq('is_request',true).single();
+
+  if(theirMsg && theirMsg.sender_id !== ME.id){
+    // Partner yang kirim request — tampilkan banner di sisi kita
+    reqBanner.style.display = 'flex';
+    document.getElementById('req-banner-sub').innerText =
+      `@${activePartner.username} mengirimkan permintaan chat. Follow balik untuk bisa chat normal.`;
+    inputBar.style.display = 'none';
+    return;
+  }
+
+  if(myMsg){
+    // Kita sudah kirim 1 request — lock input
+    inputBar.style.display   = 'none';
+    lockedBar.style.display  = 'flex';
+    return;
+  }
+
+  // Belum ada pesan sama sekali — bisa kirim 1 request
+  // Input normal, tapi pesan pertama akan di-mark is_request=true
+}
+
+async function acceptChatRequest(){
+  // Follow balik partner
+  if(activePartner){
+    await sb.from('follows').upsert(
+      {sender_id:ME.id, receiver_id:activePartner.id, status:'accepted'},
+      {onConflict:'sender_id,receiver_id'}
+    );
+    followMap[activePartner.id] = 'accepted';
+    // Trigger SQL akan auto set chat_status = active
+    showToast(`Kamu follow @${activePartner.username} balik! Chat terbuka 🎉`);
+    await updateChatInputState();
+    renderPeopleList(allUsers);
+    updateSidebarUI();
+  }
+}
+
+async function declineChatRequest(){
+  if(!activePartner) return;
+  // Unfollow sender (kalau ada) dan hapus conversation
+  await sb.from('follows').delete().eq('sender_id',activePartner.id).eq('receiver_id',ME.id);
+  await sb.from('conversations').delete().eq('id',activeConvoId);
+  backToList();
+  showToast('Permintaan chat diabaikan.');
+}
+
+// ════════════════════════════════
+//  REPORTS
+// ════════════════════════════════
+let _reportTargetId   = null;
+let _reportTargetName = null;
+let _reportMessageId  = null;
+let _reportReason     = null;
+
+function openReport(userId, username, msgId = null){
+  _reportTargetId   = userId;
+  _reportTargetName = username;
+  _reportMessageId  = msgId;
+  _reportReason     = null;
+  document.getElementById('report-detail').value = '';
+  document.querySelectorAll('.report-reason-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('report-submit-btn').disabled = true;
+  document.getElementById('modal-report').classList.add('open');
+  closeUserProfile();
+  hideCtxMenu();
+}
+
+function selectReason(btn, reason){
+  document.querySelectorAll('.report-reason-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  _reportReason = reason;
+  document.getElementById('report-submit-btn').disabled = false;
+}
+
+function closeReport(){
+  document.getElementById('modal-report').classList.remove('open');
+}
+
+async function submitReport(){
+  if(!_reportReason || !_reportTargetId) return;
+  const btn = document.getElementById('report-submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Mengirim...';
+
+  const detail = document.getElementById('report-detail').value.trim();
+
+  const { error } = await sb.from('reports').insert({
+    reporter_id: ME.id,
+    reported_id: _reportTargetId,
+    message_id:  _reportMessageId || null,
+    reason:      _reportReason,
+    detail:      detail,
+    status:      'pending'
+  });
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa fa-flag"></i> Kirim Laporan';
+
+  if(error){
+    showToast('❌ Gagal mengirim laporan: ' + error.message);
+    return;
+  }
+
+  closeReport();
+  showToast('✅ Laporan terkirim. Tim kami akan meninjau.');
+}
+
+// ════════════════════════════════
+//  ROLE SYSTEM
+// ════════════════════════════════
+function getRoleBadgeHTML(role){
+  if(role === 'owner') return `<span class="role-badge owner">👑 Owner</span>`;
+  if(role === 'admin') return `<span class="role-badge admin">🛡️ Admin</span>`;
+  return '';
+}
+
+// Admin/Owner: pantau chat langsung (monitor mode)
+async function monitorChat(userId, username, email){
+  // Admin bisa buka chat siapapun sebagai observer
+  // Kita ambil conversation ID antara dua user tersebut
+  // Untuk simplicity: buka chat biasa tapi dengan flag monitor
+  closeUserProfile();
+  showToast(`👁️ Memantau chat @${username}...`);
+
+  // Cari semua conversation yang melibatkan user ini
+  const { data: convosData } = await sb.from('conversations')
+    .select('*, partner:partner_id(*), owner:owner_id(*)')
+    .or(`owner_id.eq.${userId},partner_id.eq.${userId}`)
+    .order('updated_at', {ascending:false})
+    .limit(1);
+
+  if(!convosData || !convosData.length){
+    showToast('User ini belum punya percakapan.');
+    return;
+  }
+
+  const c = convosData[0];
+  const partner = c.owner_id === userId ? c.partner : c.owner;
+  if(!partner) return;
+
+  // Open convo in read-only monitor mode
+  await openConvoMonitor(c.id, userId, username, partner);
+}
+
+async function openConvoMonitor(convoId, monitoredId, monitoredName, partner){
+  // Set active convo tapi dalam mode monitor (ga bisa kirim)
+  activeConvoId = convoId;
+  activePartner = { id: partner.id, username: partner.username, email: partner.email };
+
+  document.getElementById('ch-avatar').src = avatarUrl(monitoredName);
+  document.getElementById('ch-name').innerText = `👁️ ${monitoredName} ↔ ${partner.username}`;
+  document.getElementById('ch-status').innerText = 'Mode Monitor — Read Only';
+  document.getElementById('ch-status').className = 'chat-partner-status';
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('chat-ui').style.display = 'flex';
+  document.getElementById('sidebar').classList.add('hidden-mobile');
+  document.getElementById('chatroom').classList.add('show-mobile');
+
+  // Sembunyikan input — monitor tidak bisa kirim
+  document.getElementById('input-bar').style.display = 'none';
+  document.getElementById('chat-locked-bar').style.display = 'none';
+  document.getElementById('blocked-banner').style.display = 'none';
+  document.getElementById('request-banner').style.display = 'none';
+
+  await loadMessages();
+  subscribeMessages(convoId);
+}
 let _profileUserId = null;
 
 async function showUserProfile(userId, username, email, bio, isOnline){
@@ -1819,25 +2576,46 @@ async function showUserProfile(userId, username, email, bio, isOnline){
 }
 
 function renderProfileActions(userId, username, email){
-  const isFollowing = followMap[userId] === 'accepted';
-  const actionsEl = document.getElementById('pm-actions');
-
+  const isFollowing = followMap[userId]==='accepted';
+  const isBlocked   = blockSet.has(userId);
+  const el          = document.getElementById('pm-actions');
   let html = '';
 
-  if(isFollowing){
-    html += `<button class="pm-btn primary" onclick="closeUserProfile();quickOpenChat('${userId}','${esc(username)}','${esc(email)}')">
-      <i class="fa fa-message"></i> Kirim Pesan
-    </button>`;
-    html += `<button class="pm-btn danger" onclick="toggleFollow('${userId}','${esc(username)}','${esc(email)}');closeUserProfile()">
-      <i class="fa fa-user-minus"></i> Unfollow
+  if(isBlocked){
+    html += `<button class="pm-btn secondary" onclick="unblockUser('${userId}','${esc(username)}');closeUserProfile()">
+      <i class="fa fa-unlock"></i> Buka Blokir
     </button>`;
   } else {
-    html += `<button class="pm-btn primary" onclick="toggleFollow('${userId}','${esc(username)}','${esc(email)}');renderProfileActions('${userId}','${esc(username)}','${esc(email)}')">
-      <i class="fa fa-user-plus"></i> Follow
+    if(isFollowing){
+      html += `<button class="pm-btn primary" onclick="closeUserProfile();quickOpenChat('${userId}','${esc(username)}','${esc(email)}')">
+        <i class="fa fa-message"></i> Kirim Pesan
+      </button>`;
+      html += `<button class="pm-btn secondary" onclick="toggleFollow('${userId}','${esc(username)}','${esc(email)}');closeUserProfile()">
+        <i class="fa fa-user-minus"></i> Unfollow
+      </button>`;
+    } else {
+      html += `<button class="pm-btn primary" onclick="toggleFollow('${userId}','${esc(username)}','${esc(email)}');renderProfileActions('${userId}','${esc(username)}','${esc(email)}')">
+        <i class="fa fa-user-plus"></i> Follow
+      </button>`;
+    }
+    html += `<button class="pm-btn danger" onclick="blockUser('${userId}','${esc(username)}')">
+      <i class="fa fa-ban"></i>
     </button>`;
   }
 
-  actionsEl.innerHTML = html;
+  // Laporan — semua user bisa
+  html += `<button class="pm-btn secondary" style="flex:none;padding:14px;" title="Laporkan" onclick="openReport('${userId}','${esc(username)}')">
+    <i class="fa fa-flag" style="color:var(--red)"></i>
+  </button>`;
+
+  // Admin/Owner monitor
+  if(myRole === 'owner' || myRole === 'admin'){
+    html += `<button class="pm-btn secondary" style="flex:none;padding:14px;" title="Pantau Chat" onclick="monitorChat('${userId}','${esc(username)}','${esc(email)}')">
+      <i class="fa fa-eye" style="color:var(--accent)"></i>
+    </button>`;
+  }
+
+  el.innerHTML = html;
 }
 
 function closeUserProfile(){
