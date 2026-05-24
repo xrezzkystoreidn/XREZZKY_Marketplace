@@ -51,42 +51,72 @@
       gap: 16px;
     }
 
-    /* ── MOBILE: top navbar hidden, bottom nav takes over ── */
+    /* ── MOBILE ≤900px: SEMBUNYIKAN navbar atas SEPENUHNYA ── */
     @media (max-width: 900px) {
-      nav {
-        height: 52px;
-        padding: 0 14px;
-        gap: 10px;
+      /* Navbar atas disembunyikan total — bottom nav handles semua navigasi */
+      nav { display: none !important; }
+
+      /* Mobile search bar tampil di dalam #mobileHeader */
+      #mobileHeader {
+        display: flex;
+        position: sticky; top: 0; z-index: 100;
+        background: var(--nav);
+        border-bottom: 1px solid var(--border);
+        padding: 10px 14px; gap: 10px; align-items: center;
       }
-      /* Hide nav items that move to bottom nav */
-      .nav-actions,
-      .quick-nav-bar { display: none !important; }
+      #mobileHeader .mob-brand {
+        font-family: 'Poppins', sans-serif;
+        font-size: 15px; font-weight: 700; color: var(--txt);
+        text-decoration: none; white-space: nowrap;
+        display: flex; align-items: center; gap: 6px;
+      }
+      #mobileHeader .mob-brand .dot {
+        width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+      }
+      #mobileHeader .mob-brand span { color: var(--accent); }
+      #mobileHeader .mob-search {
+        flex: 1; display: flex; align-items: center;
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: var(--radius-sm); overflow: hidden;
+      }
+      #mobileHeader .mob-search input {
+        flex: 1; background: transparent; border: none; outline: none;
+        color: var(--txt); font-family: 'Poppins', sans-serif;
+        font-size: 13px; padding: 8px 12px;
+      }
+      #mobileHeader .mob-search input::placeholder { color: var(--txt2); }
+      #mobileHeader .mob-search button {
+        background: var(--accent); border: none; cursor: pointer;
+        color: #fff; padding: 0 12px; height: 100%; font-size: 13px;
+      }
 
-      /* Keep brand + search only */
-      .nav-brand .brand-text { font-size: 14px; }
-      .nav-search { max-width: 100%; }
+      /* Main content: padding bawah untuk bottom nav */
+      main { padding: 14px 14px 80px !important; }
+      .page { min-height: calc(100vh - 52px); }
 
-      /* Main page content: add bottom padding for bottom nav */
-      main { padding: 14px 14px 80px; }
-      .page { padding-bottom: 0; }
-
-      /* Hero adjustments */
-      .hero { padding: 20px 16px; margin-bottom: 16px; }
+      /* Hero */
+      .hero { padding: 18px 16px; margin-bottom: 16px; }
       .hero h1 { font-size: 17px; }
-      .hero p { font-size: 12px; }
+      .hero p   { font-size: 12px; }
 
-      /* Product grid 2 column */
-      .product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      /* Product grid 2 kolom */
+      .product-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
 
-      /* Detail modal full screen on mobile */
-      .detail-modal { max-width: 100%; border-radius: var(--radius) var(--radius) 0 0; }
-      .detail-body { padding: 16px; }
+      /* Detail modal dari bawah */
+      .modal-overlay { padding: 0; align-items: flex-end; }
+      .auth-modal { border-radius: 20px 20px 0 0; padding-bottom: 28px; }
+      .detail-modal { max-width: 100%; border-radius: 20px 20px 0 0; }
     }
 
     @media (max-width: 480px) {
       .product-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
       .hero-stats { gap: 16px; }
       .stat-val { font-size: 18px; }
+    }
+
+    /* Desktop: hide mobile header */
+    @media (min-width: 901px) {
+      #mobileHeader { display: none !important; }
     }
     .nav-brand {
       font-size: 16px; font-weight: 700;
@@ -630,48 +660,40 @@
 
     /* ── HIDE-SM utility ── */
     .hide-sm { }
-    @media (max-width: 900px) {
-      .hide-sm { display: none !important; }
-    }
+    @media (max-width: 900px) { .hide-sm { display: none !important; } }
 
     /* ── DESKTOP: sidebar + no bottom nav ── */
     @media (min-width: 901px) {
       aside { display: flex !important; }
       #bottomNav { display: none !important; }
-      main { padding-bottom: 24px !important; }
       #catSheet, #profilSheet { display: none !important; }
     }
 
-    /* ── MOBILE: hide auth nav (handled by bottom profil sheet) ── */
+    /* ── MOBILE: nav-actions fully hidden (bottom nav handles all) ── */
     @media (max-width: 900px) {
-      /* Hide top nav actions on mobile — bottom nav handles navigation */
-      #navGuest, #navUser, .quick-nav-bar { display: none !important; }
-      /* But keep auth modal accessible via bottom sheet */
-      nav { padding: 0 14px; gap: 10px; height: 52px; }
-      nav .nav-brand { font-size: 14px; }
-      /* Search takes full width on mobile */
-      .nav-search { max-width: none; flex: 1; }
-      /* Layout */
-      .page { min-height: calc(100vh - 52px); }
-      main { padding: 14px 14px 80px; }
-      /* Modals */
-      .modal-overlay { padding: 0; align-items: flex-end; }
-      .auth-modal { border-radius: 20px 20px 0 0; max-width: 100%; padding-bottom: 28px; }
-      .detail-modal { max-width: 100%; border-radius: 20px 20px 0 0; }
-    }
-
-    /* ── MOBILE small screens ── */
-    @media (max-width: 480px) {
-      .product-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .hero-stats { gap: 16px; }
-      .stat-val { font-size: 18px; }
-      .nav-brand .brand-text .accent-text { display: none; }
+      #navGuest, #navUser, .quick-nav-bar, .nav-actions { display: none !important; }
     }
   </style>
 </head>
 <body>
 
-<!-- ══ NAVBAR ══ -->
+<!-- ══ MOBILE HEADER (≤900px) — search + brand only ══ -->
+<div id="mobileHeader" style="display:none">
+  <a class="mob-brand" href="index.html">
+    <div class="dot"></div>
+    XREZZKY<span>STORE</span>
+  </a>
+  <div class="mob-search">
+    <input id="mobSearch" type="text" placeholder="Cari produk..." autocomplete="off"
+      onkeydown="if(event.key==='Enter'){document.getElementById('navSearch').value=this.value;doSearch()}"
+      oninput="document.getElementById('navSearch').value=this.value" />
+    <button onclick="document.getElementById('navSearch').value=document.getElementById('mobSearch').value;doSearch()">
+      <i class="fas fa-search"></i>
+    </button>
+  </div>
+</div>
+
+<!-- ══ DESKTOP NAVBAR (>900px) ══ -->
 <nav>
   <a class="nav-brand" href="index.html">
     <div class="dot"></div>
@@ -1684,14 +1706,59 @@ function toast(msg, type = 'info') {
   setTimeout(() => el.remove(), 3500);
 }
 
-// Init categories on page load
-document.addEventListener('DOMContentLoaded', () => {
-  // loadCategories called after DOMContentLoaded — but sb is defined before
-  // so we hook into the existing init flow
-}, { once: false });
+// ══════════════════════════════════════════
+//  BACK BUTTON — inject tombol kembali
+//  (hanya di halaman selain index.html)
+// ══════════════════════════════════════════
+(function injectBackButton() {
+  const isHome = location.pathname === '/' ||
+                 location.pathname.endsWith('index.html') ||
+                 location.pathname.endsWith('/');
+  if (isHome) return; // tidak perlu di halaman utama
 
-// Hook: also load categories when products load
-const _origInit = window.addEventListener;
+  // Inject CSS
+  const style = document.createElement('style');
+  style.textContent = `
+    #backBtn {
+      position: fixed;
+      bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+      left: 16px;
+      z-index: 250;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--nav, #171c24);
+      border: 1px solid var(--border, #2a3442);
+      color: var(--txt, #f5f7fa);
+      font-size: 16px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,.4);
+      transition: all .18s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #backBtn:active { transform: scale(.9); }
+    #backBtn:hover  { border-color: var(--accent, #4a7dff); color: var(--accent, #4a7dff); }
+    @media (max-width: 900px) { #backBtn { display: flex; } }
+    @media (min-width: 901px) { #backBtn { display: none !important; } }
+  `;
+  document.head.appendChild(style);
+
+  // Inject button
+  const btn = document.createElement('button');
+  btn.id = 'backBtn';
+  btn.title = 'Kembali';
+  btn.innerHTML = '<i class="fas fa-arrow-left"></i>';
+  btn.onclick = () => {
+    if (document.referrer && document.referrer.includes(location.hostname)) {
+      history.back();
+    } else {
+      location.href = 'index.html';
+    }
+  };
+  document.body.appendChild(btn);
+})();
 </script>
 
 <!-- ══ BOTTOM NAV (≤900px) ══ -->
