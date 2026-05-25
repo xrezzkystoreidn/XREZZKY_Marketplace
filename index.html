@@ -961,6 +961,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadProducts();
   await loadStats();
   await loadCategories();   // ← dynamic categories from Supabase
+  await checkInfoBadge();   // ← check unread info posts
   bindSearch();
 });
 
@@ -983,6 +984,7 @@ async function setUser(user) {
   const { data } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
   currentProfile = data;
   updateNavUser();
+  updateBnProfilAv();
 }
 
 function updateNavUser() {
@@ -1534,38 +1536,175 @@ function selectCatSheet(slug) {
 // ══════════════════════════════════════════
 //  BOTTOM NAV
 // ══════════════════════════════════════════
+// ══════════════════════════════════════════
+//  BOTTOM NAV — full animation + logic
+// ══════════════════════════════════════════
 function bnGo(tab) {
-  // Reset all active states
-  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  // Ripple + bounce animation
   const el = document.getElementById(`bn-${tab}`);
+  if (el) {
+    // Ripple
+    const ripple = el.querySelector('.bn-ripple');
+    if (ripple) {
+      ripple.classList.remove('animate');
+      void ripple.offsetWidth; // reflow
+      ripple.classList.add('animate');
+    }
+    // Bounce
+    el.classList.remove('tap-anim');
+    void el.offsetWidth;
+    el.classList.add('tap-anim');
+    setTimeout(() => el.classList.remove('tap-anim'), 450);
+  }
+
+  // Set active
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
 
   if (tab === 'home') {
-    closeCatSheet(); closeProfilSheet();
+    closeCatSheet(); closeInfoSheet(); closeProfilSheet();
     setCategory(null, null, document.querySelector('.cat-tab'));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-  if (tab === 'kategori') {
+  else if (tab === 'info') {
     closeProfilSheet();
-    openCatSheet();
+    openInfoSheet();
   }
-  if (tab === 'profil') {
-    closeCatSheet();
+  else if (tab === 'profil') {
+    closeInfoSheet();
     if (!currentUser) {
-      // Guest — show login modal
       if (el) el.classList.remove('active');
-      openAuth('login');
-      return;
+      openAuth('login'); return;
     }
     openProfilSheet();
   }
-  if (tab === 'riwayat') {
+  else if (tab === 'riwayat') {
     if (!currentUser) {
       if (el) el.classList.remove('active');
-      openAuth('login');
-      return;
+      openAuth('login'); return;
     }
     location.href = 'riwayat.html';
+  }
+}
+
+// FAB deposit tap
+function bnFabTap() {
+  const fab = document.getElementById('bnFabDeposit');
+  if (fab) {
+    fab.classList.remove('popping');
+    void fab.offsetWidth;
+    fab.classList.add('popping');
+    setTimeout(() => fab.classList.remove('popping'), 600);
+  }
+  if (!currentUser) { openAuth('login'); return; }
+  setTimeout(() => location.href = 'deposit.html', 150);
+}
+
+// Update profil avatar in bottom nav when logged in
+function updateBnProfilAv() {
+  const avEl = document.getElementById('bnProfilAv');
+  if (!avEl) return;
+  if (currentProfile?.avatar_url) {
+    avEl.innerHTML = `<img src="${CLOUDINARY_BASE}${currentProfile.avatar_url}" alt="av"/>`;
+  } else if (currentUser) {
+    const nm = currentProfile?.username || currentUser.email[0];
+    avEl.innerHTML = `<span style="font-size:11px;font-weight:700;color:var(--accent)">${nm[0].toUpperCase()}</span>`;
+  } else {
+    avEl.innerHTML = `<i class="fas fa-user-circle"></i>`;
+  }
+}
+
+// ── Info Sheet ──
+function openInfoSheet() {
+  const sheet = document.getElementById('infoSheet');
+  if (!sheet) return;
+  sheet.style.display = 'block';
+  const inner = document.getElementById('infoSheetInner');
+  if (inner) {
+    inner.style.animation = 'none';
+    requestAnimationFrame(() => { inner.style.animation = 'sheetUp .3s cubic-bezier(.32,1.25,.55,1)'; });
+  }
+  loadInfoPosts();
+}
+function closeInfoSheet() {
+  const sheet = document.getElementById('infoSheet');
+  if (sheet) sheet.style.display = 'none';
+  const btn = document.getElementById('bn-info');
+  if (btn) btn.classList.remove('active');
+  if (!activeCategory) document.getElementById('bn-home')?.classList.add('active');
+}
+
+async function loadInfoPosts() {
+  const list = document.getElementById('infoPostList');
+  if (!list) return;
+  list.innerHTML = `<div style="text-align:center;padding:30px"><div style="width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spn .7s linear infinite;margin:0 auto 12px"></div><div style="font-size:13px;color:var(--txt2)">Memuat...</div></div>`;
+
+  const { data } = await sb.from('info_posts').select('*').eq('is_active', true).order('created_at', { ascending: false }).limit(20);
+  const posts = data || [];
+
+  // Clear notif dot if seen
+  document.getElementById('bnInfoDot')?.style.setProperty('display','none');
+
+  if (!posts.length) {
+    list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--txt2)">
+      <div style="font-size:32px;margin-bottom:12px;opacity:.3">📢</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">Belum ada info</div>
+      <div style="font-size:12px">Admin belum posting update apapun</div>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = posts.map(p => {
+    const typeIcon  = { update:'fas fa-rotate',  promo:'fas fa-tag', maintenance:'fas fa-wrench', announcement:'fas fa-bullhorn' };
+    const typeColor = { update:'var(--accent)',   promo:'var(--success)', maintenance:'var(--warn)', announcement:'var(--danger)' };
+    const icon  = typeIcon[p.type]  || 'fas fa-info-circle';
+    const color = typeColor[p.type] || 'var(--accent)';
+    const hasLink = p.link_url && p.link_label;
+
+    return `<div style="padding:16px 18px;border-bottom:1px solid var(--border);cursor:default">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="width:38px;height:38px;border-radius:10px;background:${color}18;color:${color};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:2px">
+          <i class="${icon}"></i>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap">
+            <span style="font-size:14px;font-weight:700">${esc(p.title)}</span>
+            <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:${color}18;color:${color};text-transform:uppercase;letter-spacing:.04em">${p.type||'info'}</span>
+          </div>
+          <div style="font-size:13px;color:var(--txt2);line-height:1.6;margin-bottom:8px">${esc(p.content)}</div>
+          ${p.image_url ? `<img src="${CLOUDINARY_BASE}${p.image_url}" style="width:100%;border-radius:8px;margin-bottom:8px;border:1px solid var(--border)" loading="lazy" />` : ''}
+          ${hasLink ? `
+            <a href="${esc(p.link_url)}" ${p.link_new_tab ? 'target="_blank" rel="noopener"' : ''} onclick="closeInfoSheet()"
+              style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;background:${color};color:#fff;font-size:13px;font-weight:600;text-decoration:none;transition:opacity .18s"
+              onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+              <i class="${p.link_icon||'fas fa-arrow-right'}"></i> ${esc(p.link_label)}
+            </a>` : ''}
+          <div style="font-size:11px;color:var(--txt2);margin-top:8px;display:flex;align-items:center;gap:4px">
+            <i class="fas fa-clock" style="font-size:10px"></i> ${timeAgo(p.created_at)}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function timeAgo(d) {
+  if (!d) return '—';
+  const s = Math.floor((Date.now() - new Date(d)) / 1000);
+  if (s < 60) return 'baru saja';
+  if (s < 3600) return Math.floor(s/60) + ' mnt lalu';
+  if (s < 86400) return Math.floor(s/3600) + ' jam lalu';
+  if (s < 604800) return Math.floor(s/86400) + ' hari lalu';
+  return new Date(d).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+// Check unread info posts on load
+async function checkInfoBadge() {
+  const { count } = await sb.from('info_posts').select('*', { count:'exact', head:true }).eq('is_active', true);
+  const lastSeen  = parseInt(localStorage.getItem('xrz_info_seen') || '0');
+  if (count > lastSeen) {
+    const dot = document.getElementById('bnInfoDot');
+    if (dot) dot.style.display = 'block';
   }
 }
 
@@ -1764,26 +1903,120 @@ function toast(msg, type = 'info') {
 <!-- ══ BOTTOM NAV (≤900px) ══ -->
 <nav id="bottomNav" aria-label="Navigasi Bawah">
   <div class="bn-inner">
+
     <button class="bn-item active" id="bn-home" onclick="bnGo('home')" aria-label="Beranda">
+      <div class="bn-ripple"></div>
       <i class="fas fa-home"></i><span>Beranda</span>
     </button>
-    <button class="bn-item" id="bn-kategori" onclick="bnGo('kategori')" aria-label="Kategori">
-      <i class="fas fa-grip"></i><span>Kategori</span>
+
+    <button class="bn-item" id="bn-info" onclick="bnGo('info')" aria-label="Info">
+      <div class="bn-ripple"></div>
+      <i class="fas fa-bell"></i>
+      <span>Info</span>
+      <span class="bn-notif-dot" id="bnInfoDot" style="display:none"></span>
     </button>
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:4px">
-      <button class="bn-fab" onclick="goPage('deposit.html')" aria-label="Deposit">
+
+    <!-- FAB Deposit (center) -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:4px;position:relative">
+      <button class="bn-fab" id="bnFabDeposit" onclick="bnFabTap()" aria-label="Deposit">
         <i class="fas fa-wallet"></i>
       </button>
-      <span style="font-size:10px;font-weight:600;color:var(--txt2);margin-top:-4px">Deposit</span>
+      <span style="font-size:10px;font-weight:600;color:var(--txt2);margin-top:-4px;line-height:1">Deposit</span>
     </div>
-    <button class="bn-item" id="bn-riwayat" onclick="goPage('riwayat.html')" aria-label="Riwayat">
+
+    <button class="bn-item" id="bn-riwayat" onclick="bnGo('riwayat')" aria-label="Riwayat">
+      <div class="bn-ripple"></div>
       <i class="fas fa-receipt"></i><span>Riwayat</span>
     </button>
+
     <button class="bn-item" id="bn-profil" onclick="bnGo('profil')" aria-label="Profil">
-      <i class="fas fa-user-circle"></i><span>Profil</span>
+      <div class="bn-ripple"></div>
+      <div class="bn-profil-av" id="bnProfilAv"><i class="fas fa-user-circle"></i></div>
+      <span>Profil</span>
     </button>
+
   </div>
 </nav>
+
+<style>
+/* ── BN ANIMATIONS ── */
+.bn-item { position: relative; overflow: hidden; }
+
+/* Ripple element */
+.bn-ripple {
+  position: absolute; border-radius: 50%;
+  background: rgba(74,125,255,.18);
+  width: 0; height: 0;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+}
+.bn-ripple.animate {
+  animation: bnRipple .5s ease-out forwards;
+}
+@keyframes bnRipple {
+  to { width: 80px; height: 80px; opacity: 0; transform: translate(-50%,-50%) scale(1); }
+}
+
+/* Icon bounce on tap */
+@keyframes bnBounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(.75) translateY(2px); }
+  60%  { transform: scale(1.15) translateY(-3px); }
+  80%  { transform: scale(.95); }
+  100% { transform: scale(1); }
+}
+.bn-item.tap-anim i, .bn-item.tap-anim .bn-profil-av {
+  animation: bnBounce .45s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Label slide up on active */
+@keyframes bnLabelIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.bn-item.active span {
+  animation: bnLabelIn .2s ease both;
+}
+
+/* Active icon scale */
+.bn-item.active i { transform: scale(1.1); }
+
+/* FAB tap animation */
+@keyframes fabPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(.82); }
+  70%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.bn-fab.popping { animation: fabPop .4s cubic-bezier(.36,.07,.19,.97) both; }
+
+/* FAB ripple */
+@keyframes fabRipple {
+  from { box-shadow: 0 0 0 0 rgba(74,125,255,.5); }
+  to   { box-shadow: 0 0 0 16px rgba(74,125,255,0); }
+}
+.bn-fab.popping { animation: fabPop .4s cubic-bezier(.36,.07,.19,.97), fabRipple .6s ease-out; }
+
+/* Notif dot on Info */
+.bn-notif-dot {
+  position: absolute; top: 5px; right: calc(50% - 16px);
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--danger, #ef4444);
+  border: 2px solid var(--nav, #171c24);
+}
+
+/* Profil avatar in bottom nav */
+.bn-profil-av {
+  width: 24px; height: 24px; border-radius: 50%;
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: var(--txt2, #9ba6b2);
+  transition: all .18s;
+}
+.bn-profil-av img { width: 100%; height: 100%; object-fit: cover; }
+.bn-item.active .bn-profil-av { border: 2px solid var(--accent, #4a7dff); }
+.bn-item.active .bn-profil-av i { color: var(--accent, #4a7dff); }
+</style>
 
 <!-- CATEGORY BOTTOM SHEET -->
 <div id="catSheet" style="position:fixed;inset:0;z-index:400;display:none;background:rgba(0,0,0,.65);backdrop-filter:blur(4px)" onclick="closeCatSheet()">
@@ -1798,6 +2031,27 @@ function toast(msg, type = 'info') {
       <div class="bsi-text"><div class="bsi-title">Semua Produk</div><div class="bsi-sub">Tampilkan semua kategori</div></div>
     </div>
     <div id="catSheetList" style="padding-bottom:16px"></div>
+  </div>
+</div>
+
+<!-- INFO BOTTOM SHEET -->
+<div id="infoSheet" style="position:fixed;inset:0;z-index:400;display:none;background:rgba(0,0,0,.65);backdrop-filter:blur(4px)" onclick="closeInfoSheet()">
+  <div id="infoSheetInner" style="position:absolute;bottom:0;left:0;right:0;background:var(--nav);border-top:1px solid var(--border);border-radius:20px 20px 0 0;max-height:85vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,12px)" onclick="event.stopPropagation()">
+    <!-- Handle -->
+    <div style="display:flex;justify-content:center;padding:12px 0 0;position:sticky;top:0;background:var(--nav);z-index:1;border-bottom:1px solid var(--border)">
+      <div style="width:36px;height:4px;border-radius:2px;background:var(--border);margin-bottom:12px"></div>
+    </div>
+    <div style="padding:0 18px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:16px;background:var(--nav);z-index:1">
+      <div>
+        <div style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px">
+          <i class="fas fa-bell" style="color:var(--accent);font-size:15px"></i>
+          Info & Update
+        </div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px">Update terbaru dari admin XREZZKY</div>
+      </div>
+      <button onclick="closeInfoSheet()" style="background:var(--surface);border:1px solid var(--border);color:var(--txt2);width:30px;height:30px;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="infoPostList" style="padding-bottom:8px"></div>
   </div>
 </div>
 
