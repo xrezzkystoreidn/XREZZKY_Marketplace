@@ -154,65 +154,10 @@
     .anim3 { animation: fadeSlide .35s .16s ease both; }
   </style>
 
-<style>
-/* ── Hide top navbar on mobile — bottom nav handles navigation ── */
-@media (max-width: 900px) {
-  nav:not(#globalBottomNav) {
-    display: none !important;
-  }
-  /* Add top spacing since nav is hidden */
-  body > div:first-of-type,
-  .page { padding-top: 0; }
-  /* Ensure content doesn't get clipped */
-  main, .page {
-    padding-bottom: 80px !important;
-  }
-}
-</style>
-
-<style>
-/* ── Mobile inner page topbar ── */
-#mobilePageHeader {
-  display: none;
-  position: sticky; top: 0; z-index: 200;
-  background: #171c24;
-  border-bottom: 1px solid #2a3442;
-  height: 52px;
-  align-items: center;
-  padding: 0 14px;
-  gap: 12px;
-}
-#mobilePageHeader .mph-back {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: #1d2430; border: 1px solid #2a3442;
-  color: #f5f7fa; font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; flex-shrink: 0; transition: all .18s;
-  -webkit-tap-highlight-color: transparent;
-}
-#mobilePageHeader .mph-back:active { transform: scale(.9); }
-#mobilePageHeader .mph-title {
-  font-size: 15px; font-weight: 700;
-  color: #f5f7fa; flex: 1;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#mobilePageHeader .mph-logo {
-  font-size: 11px; font-weight: 700; color: #4a7dff;
-  opacity: .7;
-}
-@media (max-width: 900px) {
-  #mobilePageHeader { display: flex; }
-}
-</style>
 </head>
 <body>
 
 <!-- ── Mobile Page Header ── -->
-<div id="mobilePageHeader">
-  <button class="mph-back" onclick="location.href='index.html'" title="Kembali">
-    <i class="fas fa-arrow-left"></i>
-  </button>
-  <div class="mph-title">Deposit Saldo</div>
   <div class="mph-logo">XREZZKY</div>
 </div>
 
@@ -681,180 +626,262 @@ function fmtRp(v){if(!v&&v!==0)return'—';if(v===0)return'Rp 0';return'Rp '+Num
 function fmtDate(d){if(!d)return'—';return new Date(d).toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
 function toast(msg,type=''){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;document.getElementById('tc').appendChild(el);setTimeout(()=>el.remove(),3800);}
 </script>
-<!-- ══ MOBILE BACK BUTTON + BOTTOM NAV (auto-injected on all pages) ══ -->
+<!-- ══ XREZZKY BOTTOM NAV — persistent fixed ══ -->
 <style>
-/* ── BACK BUTTON ── */
-#backBtn {
-  position: fixed;
-  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
-  left: 16px;
-  z-index: 250;
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  background: var(--nav, #171c24);
-  border: 1px solid var(--border, #2a3442);
-  color: var(--txt, #f5f7fa);
-  font-size: 16px;
+/* ── XBN BASE ── */
+#xbn {
   display: none;
-  align-items: center; justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0,0,0,.4);
-  transition: all .18s;
-  -webkit-tap-highlight-color: transparent;
-}
-#backBtn:active { transform: scale(.9); }
-#backBtn:hover  { border-color: #4a7dff; color: #4a7dff; }
-
-/* ── BOTTOM NAV (all inner pages) ── */
-#globalBottomNav {
-  display: none;
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
-  background: #171c24;
-  border-top: 1px solid #2a3442;
-  height: 62px;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 9999 !important;
+  background: rgba(23,28,36,.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(74,125,255,.18);
+  height: 64px;
+  padding: 0 8px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -4px 24px rgba(0,0,0,.5);
 }
-.gbn-inner { display: flex; align-items: center; width: 100%; height: 100%; }
-.gbn-item {
+#xbn .xbn-inner {
+  display: flex; align-items: center;
+  width: 100%; height: 100%;
+}
+.xbn-btn {
   flex: 1; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 3px; cursor: pointer;
-  padding: 6px 4px; border-radius: 10px; transition: all .18s;
-  background: none; border: none; color: #9ba6b2;
-  font-family: 'Poppins', sans-serif;
-  -webkit-tap-highlight-color: transparent; text-decoration: none;
-}
-.gbn-item:active { transform: scale(.9); }
-.gbn-item.active { color: #4a7dff; }
-.gbn-item i    { font-size: 19px; line-height: 1; }
-.gbn-item span { font-size: 10px; font-weight: 600; letter-spacing: .01em; }
-.gbn-fab {
-  width: 50px; height: 50px; border-radius: 50%;
-  background: linear-gradient(135deg, #4a7dff, #7c3aed);
-  color: #fff; font-size: 20px; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 18px rgba(74,125,255,.45);
-  margin-bottom: 8px; transition: transform .18s;
+  justify-content: center; gap: 3px;
+  background: none; border: none; cursor: pointer;
+  color: #6b7a8d; font-family: 'Poppins', sans-serif;
+  padding: 4px 0; position: relative; overflow: hidden;
   -webkit-tap-highlight-color: transparent;
+  transition: color .2s; border-radius: 12px; min-height: 52px;
+  text-decoration: none;
 }
-.gbn-fab:active { transform: scale(.9); }
-
-/* ── INNER PAGE BOTTOM PADDING ── */
-.page-with-bn { padding-bottom: 80px !important; }
-
-/* ── RESPONSIVE ── */
+.xbn-btn i {
+  font-size: 21px; line-height: 1;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), color .2s;
+  display: block;
+}
+.xbn-btn span { font-size: 10px; font-weight: 600; letter-spacing: .02em; line-height: 1; }
+.xbn-btn.active { color: #4a7dff; }
+.xbn-btn.active i { transform: translateY(-2px) scale(1.15); color: #4a7dff; }
+.xbn-btn::after {
+  content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  width: 0; height: 3px; border-radius: 2px;
+  background: linear-gradient(90deg, #4a7dff, #7c3aed);
+  transition: width .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 0 8px rgba(74,125,255,.8);
+}
+.xbn-btn.active::after { width: 24px; }
+.xbn-btn:active { transform: scale(.88); }
+.xbn-ripple {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  background: rgba(74,125,255,.25);
+  transform: scale(0); animation: xbnRipple .5s ease-out forwards;
+}
+@keyframes xbnRipple { to { transform: scale(4); opacity: 0; } }
+.xbn-fab-wrap {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding-bottom: 6px; gap: 2px;
+}
+.xbn-fab {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, #4a7dff 0%, #7c3aed 100%);
+  color: #fff; font-size: 22px; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(74,125,255,.55);
+  margin-bottom: 2px;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.xbn-fab:active { transform: scale(.85); box-shadow: 0 2px 10px rgba(74,125,255,.4); }
+.xbn-fab.pulse { animation: xbnFabPulse .5s cubic-bezier(.34,1.56,.64,1); }
+@keyframes xbnFabPulse {
+  0%{transform:scale(1)} 40%{transform:scale(.82)} 70%{transform:scale(1.15)} 100%{transform:scale(1)}
+}
+.xbn-fab-label { font-size: 10px; font-weight: 600; color: #9ba6b2; line-height: 1; }
+.xbn-av {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #1d2430; border: 2px solid transparent;
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #6b7a8d;
+  transition: border-color .2s;
+}
+.xbn-av img { width:100%; height:100%; object-fit:cover; }
+.xbn-btn.active .xbn-av { border-color: #4a7dff; color: #4a7dff; }
+/* Page header on mobile */
+#mobilePageHeader {
+  display: none;
+  position: sticky; top: 0; z-index: 200;
+  background: #171c24; border-bottom: 1px solid #2a3442;
+  height: 52px; align-items: center; padding: 0 14px; gap: 12px;
+}
+#mobilePageHeader .mph-back {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: #1d2430; border: 1px solid #2a3442; color: #f5f7fa;
+  font-size: 14px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+}
+#mobilePageHeader .mph-back:active { transform: scale(.9); }
+#mobilePageHeader .mph-title { font-size: 15px; font-weight: 700; color: #f5f7fa; flex: 1; }
+#mobilePageHeader .mph-logo { font-size: 11px; font-weight: 700; color: #4a7dff; opacity: .7; }
+/* Hide top nav, show bottom nav on mobile */
 @media (max-width: 900px) {
-  #backBtn          { display: flex; }
-  #globalBottomNav  { display: flex; }
-  body              { padding-bottom: 0; }
+  #xbn { display: flex !important; }
+  #mobilePageHeader { display: flex !important; }
+  nav:not(#xbn) { display: none !important; }
+  #topbar { display: none !important; }
+  #sidebar { display: none !important; }
+  #wrapper, #main { margin-left: 0 !important; margin-top: 0 !important; }
+  body > .main, main, .page, #main { padding-bottom: 80px !important; padding-top: 0 !important; }
+  .page { min-height: calc(100vh - 52px); }
 }
 @media (min-width: 901px) {
-  #backBtn         { display: none !important; }
-  #globalBottomNav { display: none !important; }
+  #xbn { display: none !important; }
+  #mobilePageHeader { display: none !important; }
 }
 </style>
 
-<!-- Back Button -->
-<button id="backBtn" onclick="goBack()" title="Kembali ke Beranda">
-  <i class="fas fa-arrow-left"></i>
-</button>
+<!-- Mobile Page Header -->
+<div id="mobilePageHeader">
+  <button class="mph-back" onclick="history.length>1?history.back():location.href='index.html'" title="Kembali">
+    <i class="fas fa-arrow-left"></i>
+  </button>
+  <div class="mph-title" id="mphTitle">XREZZKY</div>
+  <div class="mph-logo">XREZZKY</div>
+</div>
 
-<!-- Global Bottom Nav -->
-<nav id="globalBottomNav" aria-label="Navigasi">
-  <div class="gbn-inner">
-    <a class="gbn-item" href="index.html" id="gbn-home" aria-label="Beranda">
+<!-- Bottom Nav -->
+<div id="xbn">
+  <div class="xbn-inner">
+    <a class="xbn-btn" href="index.html" id="xbn-home" aria-label="Beranda" onclick="xbnSetActive('home')">
       <i class="fas fa-home"></i><span>Beranda</span>
     </a>
-    <button class="gbn-item" id="gbn-kategori" onclick="gbnKategori()" aria-label="Kategori">
-      <i class="fas fa-grip"></i><span>Kategori</span>
+    <button class="xbn-btn" id="xbn-info" onclick="xbnNavInfo(this)" aria-label="Info">
+      <i class="fas fa-bell"></i><span>Info</span>
     </button>
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:4px">
-      <a class="gbn-fab" href="deposit.html" aria-label="Deposit">
+    <div class="xbn-fab-wrap">
+      <a class="xbn-fab" href="deposit.html" onclick="xbnFabAnim(this)" aria-label="Deposit">
         <i class="fas fa-wallet"></i>
       </a>
-      <span style="font-size:10px;font-weight:600;color:#9ba6b2;margin-top:-4px">Deposit</span>
+      <span class="xbn-fab-label">Deposit</span>
     </div>
-    <a class="gbn-item" href="riwayat.html" id="gbn-riwayat" aria-label="Riwayat">
+    <a class="xbn-btn" href="riwayat.html" id="xbn-riwayat" aria-label="Riwayat" onclick="xbnSetActive('riwayat')">
       <i class="fas fa-receipt"></i><span>Riwayat</span>
     </a>
-    <button class="gbn-item" id="gbn-profil" onclick="gbnProfil()" aria-label="Profil">
-      <i class="fas fa-user-circle"></i><span>Profil</span>
-    </button>
+    <a class="xbn-btn" href="profil.html" id="xbn-profil" aria-label="Profil" onclick="xbnSetActive('profil')">
+      <div class="xbn-av" id="xbnAv"><i class="fas fa-user-circle"></i></div>
+      <span>Profil</span>
+    </a>
   </div>
-</nav>
+</div>
 
 <script>
-// ── Auto-add bottom padding to main content ──
-document.addEventListener('DOMContentLoaded', () => {
-  if (window.innerWidth <= 900) {
-    const targets = document.querySelectorAll('main, .page, #main, .content');
-    targets.forEach(el => {
-      const pb = parseInt(getComputedStyle(el).paddingBottom) || 0;
-      if (pb < 70) el.style.paddingBottom = '80px';
-    });
-    document.body.style.paddingBottom = '0';
-  }
-
-  // Mark active nav item based on current page
-  const page = location.pathname.split('/').pop() || 'index.html';
-  const map = {
-    'index.html': 'gbn-home',
-    '': 'gbn-home',
-    'riwayat.html': 'gbn-riwayat',
-    'deposit.html': 'gbn-deposit',
-    'profil.html': 'gbn-profil',
+// ── Auto-highlight active nav item based on current page ──
+(function() {
+  var page = location.pathname.split('/').pop() || 'index.html';
+  var map = {
+    'index.html':'home', '':'home',
+    'riwayat.html':'riwayat',
+    'deposit.html':'deposit',
+    'profil.html':'profil',
+    'checkout.html':'home',
+    'seller-dashboard.html':'home',
+    'cs-dashboard.html':'home',
+    'admin-panel.html':'home',
+    'deposit-admin.html':'home',
+    'info-admin.html':'home',
   };
-  const activeId = map[page];
-  if (activeId) {
-    const el = document.getElementById(activeId);
+  var active = map[page];
+  if (active) {
+    var el = document.getElementById('xbn-' + active);
     if (el) el.classList.add('active');
   }
-
-  // Deposit fab highlight when on deposit page
-  if (page === 'deposit.html') {
-    const fab = document.querySelector('.gbn-fab');
-    if (fab) fab.style.boxShadow = '0 4px 24px rgba(74,125,255,.7)';
-  }
-});
-
-// ── Back button ──
-function goBack() {
-  if (history.length > 1 && document.referrer) {
-    history.back();
-  } else {
-    location.href = 'index.html';
-  }
-}
-
-// ── Kategori redirect ──
-function gbnKategori() {
-  const page = location.pathname.split('/').pop() || 'index.html';
-  if (page === 'index.html' || page === '') {
-    // Already on home, trigger category sheet if available
-    if (typeof openCatSheet === 'function') openCatSheet();
-    else window.scrollTo({ top: 200, behavior: 'smooth' });
-  } else {
-    location.href = 'index.html#kategori';
-  }
-}
-
-// ── Profil button ──
-async function gbnProfil() {
-  // Check login status
-  if (typeof sb !== 'undefined') {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-      if (typeof openAuth === 'function') openAuth('login');
-      else location.href = 'index.html';
-      return;
+  // Set page title in mobile header
+  var titles = {
+    'riwayat.html':'Riwayat Transaksi',
+    'deposit.html':'Deposit Saldo',
+    'profil.html':'Profil',
+    'checkout.html':'Checkout',
+    'seller-dashboard.html':'Seller Dashboard',
+    'cs-dashboard.html':'CS Dashboard',
+    'admin-panel.html':'Admin Panel',
+    'deposit-admin.html':'Kelola Deposit',
+    'info-admin.html':'Kelola Info',
+  };
+  var titleEl = document.getElementById('mphTitle');
+  if (titleEl && titles[page]) titleEl.textContent = titles[page];
+  // Add bottom padding to content
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.innerWidth <= 900) {
+      var els = document.querySelectorAll('main, .main, .page, #main');
+      els.forEach(function(el) {
+        var pb = parseInt(getComputedStyle(el).paddingBottom) || 0;
+        if (pb < 70) el.style.paddingBottom = '80px';
+      });
     }
-  }
-  const page = location.pathname.split('/').pop() || 'index.html';
-  if (page === 'index.html' || page === '') {
-    if (typeof openProfilSheet === 'function') openProfilSheet();
-  } else {
-    location.href = 'profil.html';
-  }
+    // Load avatar from Supabase if logged in
+    if (typeof supabase !== 'undefined') {
+      try {
+        var sb2 = supabase.createClient(
+          'https://jydfjfjttpmropoczgop.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5ZGZqZmp0dHBtcm9wb2N6Z29wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMDgyNTEsImV4cCI6MjA5MzY4NDI1MX0.CyxQU-zng4OBP1kOlZEn0UZVGurfVp6TfNWS_zOaf3s'
+        );
+        sb2.auth.getSession().then(function(r) {
+          var session = r.data && r.data.session;
+          if (!session) return;
+          sb2.from('profiles').select('avatar_url,username').eq('id', session.user.id).maybeSingle().then(function(pr) {
+            var p = pr.data;
+            if (!p) return;
+            var avEl = document.getElementById('xbnAv');
+            if (!avEl) return;
+            if (p.avatar_url) {
+              avEl.innerHTML = '<img src="https://res.cloudinary.com/drjmclzbi/image/upload/' + p.avatar_url + '" alt="av"/>';
+            } else {
+              var nm = p.username || session.user.email[0];
+              avEl.style.background = '#4a7dff';
+              avEl.style.color = '#fff';
+              avEl.innerHTML = '<span style="font-size:12px;font-weight:800">' + nm[0].toUpperCase() + '</span>';
+            }
+          });
+        });
+      } catch(e) {}
+    }
+  });
+})();
+
+function xbnSetActive(tab) {
+  document.querySelectorAll('.xbn-btn').forEach(function(b){ b.classList.remove('active'); });
+  var el = document.getElementById('xbn-' + tab);
+  if (el) el.classList.add('active');
 }
+function xbnFabAnim(el) {
+  el.classList.remove('pulse');
+  void el.offsetWidth;
+  el.classList.add('pulse');
+  setTimeout(function(){ el.classList.remove('pulse'); }, 500);
+}
+function xbnNavInfo(el) {
+  // On inner pages, just go to index with info hash
+  location.href = 'index.html#info';
+}
+function xbnRipple(btn) {
+  var r = document.createElement('span');
+  r.className = 'xbn-ripple';
+  r.style.cssText = 'width:40px;height:40px;margin:-20px 0 0 -20px;top:50%;left:50%;position:absolute';
+  btn.appendChild(r);
+  setTimeout(function(){ r.remove(); }, 600);
+}
+// Add ripple to all xbn-btn clicks
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.xbn-btn');
+  if (btn) xbnRipple(btn);
+});
 </script>
 
 </body>
